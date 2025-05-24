@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>🐋 Whale Wall Tracker - CryptoDensities.pro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      padding: 40px;
+      color: #333;
+      display: flex;
+      justify-content: center;
+    }
+    .container {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+    }
+    .left-column {
+      flex: 2;
+      margin-right: 20px;
+    }
+    .right-column {
+      flex: 1;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    .filters {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    select, button {
+      padding: 6px 10px;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    .buy { color: green; font-weight: bold; }
+    .sell { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="left-column">
+      <h1>🐋 Whale Wall Tracker</h1>
+      <p>Live tracking of large limit order walls on Binance and Bybit.</p>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label for="exchangeFilter">Exchange:</label>
+          <select id="exchangeFilter">
+            <option value="">All</option>
+            <option value="Binance">Binance</option>
+            <option value="Bybit">Bybit</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="coinFilter">Coin:</label>
+          <select id="coinFilter"></select>
+        </div>
+        <div class="filter-group">
+          <label for="typeFilter">Type:</label>
+          <select id="typeFilter">
+            <option value="">All</option>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="valueFilter">Value:</label>
+          <select id="valueFilter">
+            <option value="">All</option>
+            <option value="100000">> $100K</option>
+            <option value="250000">> $250K</option>
+            <option value="500000">> $500K</option>
+            <option value="1000000">> $1M</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="ageFilter">Age:</label>
+          <select id="ageFilter">
+            <option value="">All</option>
+            <option value="3600">&lt; 1h</option>
+            <option value="21600">&lt; 6h</option>
+            <option value="86400">&lt; 24h</option>
+          </select>
+        </div>
+        <button onclick="resetFilters()">Reset</button>
+      </div>
+
+      <table id="wallsTable">
+        <thead>
+          <tr>
+            <th>Type</th><th>Exchange</th><th>Coin</th><th>Price ($)</th>
+            <th>Quantity</th><th>Value ($)</th><th>Distance (%)</th>
+            <th>Age</th><th>Volatility</th><th>Volume</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="right-column">
+      <h2>Featured Content</h2>
+      <p>This is where sponsored banners or affiliate links will go.</p>
+      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
+    </div>
+  </div>
+
+  <script>
+    let rawData = [];
+
+    async function fetchData() {
+      try {
+        const res = await fetch("https://crypto.zeabur.app/api/walls");
+        rawData = await res.json();
+        populateCoinFilter();
+        renderTable();
+      } catch (err) {
+        console.error("Failed to fetch walls:", err);
+      }
+    }
+
+    function populateCoinFilter() {
+      const coinSelect = document.getElementById("coinFilter");
+      const coins = [...new Set(rawData.map(w => w.coin))].sort();
+      coinSelect.innerHTML = '<option value="">All</option>' + coins.map(c => `<option value="${c}">${c}</option>`).join("");
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector("#wallsTable tbody");
+      tbody.innerHTML = "";
+
+      const exchange = document.getElementById("exchangeFilter").value;
+      const coin = document.getElementById("coinFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const value = parseFloat(document.getElementById("valueFilter").value) || 0;
+      const maxAge = parseFloat(document.getElementById("ageFilter").value) || Infinity;
+
+      rawData.forEach(w => {
+        if (
+          (exchange && w.exchange !== exchange) ||
+          (coin && w.coin !== coin) ||
+          (type && w.type !== type) ||
+          (w.value < value) ||
+          (w.age_seconds > maxAge)
+        ) return;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="${w.type}">${w.type.charAt(0).toUpperCase() + w.type.slice(1)}</td>
+          <td>${w.exchange}</td>
+          <td>${w.coin}</td>
+          <td>${w.price.toLocaleString()}</td>
+          <td>${w.quantity}</td>
+          <td>$${w.value.toLocaleString()}</td>
+          <td>${w.distance}</td>
+          <td>${w.age}</td>
+          <td>${w.volatility}</td>
+          <td>$${w.volume}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function resetFilters() {
+      document.querySelectorAll(".filters select").forEach(select => select.value = "");
+      renderTable();
+    }
+
+    document.querySelectorAll(".filters select").forEach(select => {
+      select.addEventListener("change", renderTable);
+    });
+
+    fetchData();
+  </script>
+</body>
+</html>
