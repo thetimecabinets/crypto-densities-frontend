@@ -135,7 +135,7 @@
 
     async function fetchData() {
       try {
-        const res = await fetch("https://crypto.zeabur.app/api/walls");
+        const res = await fetch("https://api.cryptodensities.pro/api/walls");
         rawData = await res.json();
         populateCoinFilter();
         renderTable();
