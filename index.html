@@ -106,7 +106,7 @@
             <option value="3600">&lt; 1h</option>
             <option value="21600">&lt; 6h</option>
             <option value="86400">&lt; 24h</option>
-            <option value="999999">> 24h</option>
+            <option value=">86400">&gt; 24h</option>
           </select>
         </div>
         <button onclick="resetFilters()">Reset</button>
@@ -126,7 +126,7 @@
 
     <div class="right-column">
       <h2>Featured Content</h2>
-      <p>Discover curated tools, market insights, and exclusive affiliate perks.</p>
+      <p>Discover curated tools, insights, and exclusive crypto resources.</p>
       <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
     </div>
   </div>
@@ -135,6 +135,7 @@
     let rawData = [];
 
     function formatNumberShort(n) {
+      if (!n || isNaN(n)) return "N/A";
       if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
       if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
       if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
@@ -166,16 +167,18 @@
       const coin = document.getElementById("coinFilter").value;
       const type = document.getElementById("typeFilter").value;
       const value = parseFloat(document.getElementById("valueFilter").value) || 0;
-      const maxAge = parseFloat(document.getElementById("ageFilter").value) || Infinity;
+      const ageFilter = document.getElementById("ageFilter").value;
 
       rawData.forEach(w => {
         if (
           (exchange && w.exchange !== exchange) ||
           (coin && w.coin !== coin) ||
           (type && w.type !== type) ||
-          (w.value < value) ||
-          (w.age_seconds > maxAge)
+          (w.value < value)
         ) return;
+
+        if (ageFilter === ">86400" && w.age_seconds <= 86400) return;
+        if (ageFilter && ageFilter !== ">86400" && w.age_seconds > parseFloat(ageFilter)) return;
 
         const row = document.createElement("tr");
         row.innerHTML = `
