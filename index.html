@@ -106,6 +106,7 @@
             <option value="3600">&lt; 1h</option>
             <option value="21600">&lt; 6h</option>
             <option value="86400">&lt; 24h</option>
+            <option value="999999">> 24h</option>
           </select>
         </div>
         <button onclick="resetFilters()">Reset</button>
@@ -125,13 +126,20 @@
 
     <div class="right-column">
       <h2>Featured Content</h2>
-      <p>This is where sponsored banners or affiliate links will go.</p>
+      <p>Discover curated tools, market insights, and exclusive affiliate perks.</p>
       <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
     </div>
   </div>
 
   <script>
     let rawData = [];
+
+    function formatNumberShort(n) {
+      if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toString();
+    }
 
     async function fetchData() {
       try {
@@ -176,11 +184,11 @@
           <td>${w.coin}</td>
           <td>${w.price.toLocaleString()}</td>
           <td>${w.quantity}</td>
-          <td>$${w.value.toLocaleString()}</td>
+          <td>$${formatNumberShort(w.value)}</td>
           <td>${w.distance}</td>
           <td>${w.age}</td>
-          <td>${w.volatility}</td>
-          <td>$${w.volume}</td>
+          <td>${w.volatility !== undefined && w.volatility !== null ? w.volatility.toFixed(2) + '%' : 'N/A'}</td>
+          <td>$${formatNumberShort(w.volume)}</td>
         `;
         tbody.appendChild(row);
       });
