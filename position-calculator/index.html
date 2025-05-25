@@ -4,187 +4,238 @@
   <meta charset="UTF-8" />
   <title>🧮 Position Calculator – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Crypto position calculator with SL/TP chart, leverage, and multi-currency support.">
+  <meta name="description" content="Crypto position size calculator with leverage, liquidation, SL/TP, multi-currency support and risk management.">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0; }
-    nav { background-color: #2c3e50; padding: 15px; color: white; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; position: sticky; top: 0; z-index: 1000; }
-    nav a { color: white; text-decoration: none; font-weight: bold; }
-    .container { max-width: 700px; margin: 40px auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    nav {
+      background-color: #2c3e50;
+      padding: 15px;
+      color: white;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
     h1 { color: #2c3e50; font-size: 24px; margin-bottom: 10px; text-align: center; }
     .subtitle { text-align: center; font-size: 14px; color: #666; margin-bottom: 20px; }
     label { display: block; margin-top: 15px; font-weight: bold; }
-    input, select { width: 100%; padding: 10px; font-size: 16px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
-    .toggle-row { display: flex; justify-content: space-between; gap: 10px; }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
     .toggle-row > div { flex: 1; }
-    button { margin-top: 25px; padding: 12px 20px; font-size: 16px; background-color: #2c3e50; color: white; border: none; border-radius: 5px; width: 100%; cursor: pointer; }
-    .result, .chart-container { margin-top: 30px; background-color: #ecf0f1; padding: 20px; border-radius: 8px; }
+    button {
+      margin-top: 25px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+    .result, .chart-container {
+      margin-top: 30px;
+      background-color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+    }
     .result p { margin: 10px 0; font-size: 16px; }
     canvas { max-width: 100%; }
-    @media (max-width: 768px) { nav { flex-direction: column; align-items: center; } }
+    @media (max-width: 768px) {
+      nav { flex-direction: column; }
+      .container { padding: 20px; }
+    }
   </style>
 </head>
 <body>
 
-  <nav>
-    <a href="/">🐋 Whale Walls</a>
-    <a href="/market-sentiment/">📊 Market Sentiment</a>
-    <a href="/position-calculator/">🧮 Position Calculator</a>
-  </nav>
+<nav>
+  <a href="/">🐋 Whale Walls</a>
+  <a href="/market-sentiment/">📊 Market Sentiment</a>
+  <a href="/position-calculator/">🧮 Position Calculator</a>
+  <a href="/how-to-use-whale-wall/">📘 How It Works</a>
+</nav>
 
-  <div class="container">
-    <h1>🧮 Position Calculator</h1>
-    <p class="subtitle">With multi-currency, leverage, SL/TP, and liquidation estimate</p>
+<div class="container">
+  <h1>🧮 Position Calculator</h1>
+  <p class="subtitle">With leverage, liquidation, SL/TP, and risk-reward ratio</p>
 
-    <form id="calcForm">
-      <label for="currency">Currency:</label>
-      <select id="currency">
-        <option value="usd">USD</option>
-        <option value="btc">BTC</option>
-        <option value="eth">ETH</option>
-        <option value="eur">EUR</option>
-      </select>
+  <form id="calcForm">
+    <label for="currency">Currency:</label>
+    <select id="currency">
+      <option value="usd">USD</option>
+      <option value="btc">BTC</option>
+      <option value="eth">ETH</option>
+      <option value="eur">EUR</option>
+    </select>
 
-      <label for="balance">Account Balance:</label>
-      <input type="number" id="balance" required step="any" />
+    <label for="balance">Account Balance:</label>
+    <input type="number" id="balance" required step="any" />
 
-      <label for="risk">Risk per Trade (%):</label>
-      <input type="number" id="risk" required step="any" />
+    <label for="risk">Risk per Trade (%):</label>
+    <input type="number" id="risk" required step="any" />
 
-      <label for="entry">Entry Price ($):</label>
-      <input type="number" id="entry" required step="any" />
+    <label for="entry">Entry Price ($):</label>
+    <input type="number" id="entry" required step="any" />
 
-      <div class="toggle-row">
-        <div>
-          <label for="stopType">Stop-Loss Type:</label>
-          <select id="stopType">
-            <option value="price">Price</option>
-            <option value="percent">Percent</option>
-          </select>
-        </div>
-        <div>
-          <label for="stop">Stop-Loss:</label>
-          <input type="number" id="stop" required step="any" />
-        </div>
+    <div class="toggle-row">
+      <div>
+        <label for="stopType">Stop-Loss Type:</label>
+        <select id="stopType">
+          <option value="price">Price</option>
+          <option value="percent">Percent</option>
+        </select>
       </div>
-
-      <label for="takeprofit">Take-Profit Price ($):</label>
-      <input type="number" id="takeprofit" step="any" />
-
-      <div class="toggle-row">
-        <div>
-          <label for="leverage">Leverage:</label>
-          <input type="number" id="leverage" step="any" />
-        </div>
-        <div>
-          <label for="direction">Position:</label>
-          <select id="direction">
-            <option value="long">Long</option>
-            <option value="short">Short</option>
-          </select>
-        </div>
+      <div>
+        <label for="stop">Stop-Loss:</label>
+        <input type="number" id="stop" required step="any" />
       </div>
-
-      <button type="submit">Calculate</button>
-    </form>
-
-    <div class="result" id="resultBox" style="display:none;">
-      <h2>📊 Result</h2>
-      <p id="riskAmount"></p>
-      <p id="positionSize"></p>
-      <p id="liquidationEst"></p>
-      <p id="marginUsed"></p>
-      <p id="rrRatio"></p>
     </div>
 
-    <div class="chart-container" id="chartSection" style="display:none;">
-      <canvas id="priceChart" height="120"></canvas>
+    <label for="takeprofit">Take-Profit Price ($):</label>
+    <input type="number" id="takeprofit" step="any" />
+
+    <div class="toggle-row">
+      <div>
+        <label for="leverage">Leverage:</label>
+        <input type="number" id="leverage" step="any" />
+      </div>
+      <div>
+        <label for="direction">Position:</label>
+        <select id="direction">
+          <option value="long">Long</option>
+          <option value="short">Short</option>
+        </select>
+      </div>
     </div>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <div class="result" id="resultBox" style="display:none;">
+    <h2>📊 Result</h2>
+    <p id="riskAmount"></p>
+    <p id="positionSize"></p>
+    <p id="liquidationEst"></p>
+    <p id="marginUsed"></p>
+    <p id="rrRatio"></p>
   </div>
 
-  <script>
-    const currencySymbols = { usd: "$", btc: "₿", eth: "Ξ", eur: "€" };
-    let priceChart;
+  <div class="chart-container" id="chartSection" style="display:none;">
+    <canvas id="priceChart" height="120"></canvas>
+  </div>
+</div>
 
-    async function fetchPrices() {
-      const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,eur");
-      const data = await res.json();
-      return {
-        usd: 1,
-        eur: 1 / data.ethereum.eur * data.ethereum.usd,
-        btc: 1 / data.bitcoin.usd,
-        eth: 1 / data.ethereum.usd
-      };
+<script>
+  const currencySymbols = { usd: "$", btc: "₿", eth: "Ξ", eur: "€" };
+  let priceChart;
+
+  async function fetchPrices() {
+    const res = await fetch("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,eur");
+    const data = await res.json();
+    return {
+      usd: 1,
+      eur: 1 / data.ethereum.eur * data.ethereum.usd,
+      btc: 1 / data.bitcoin.usd,
+      eth: 1 / data.ethereum.usd
+    };
+  }
+
+  document.getElementById("calcForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const balance = parseFloat(document.getElementById("balance").value);
+    const riskPercent = parseFloat(document.getElementById("risk").value);
+    const entry = parseFloat(document.getElementById("entry").value);
+    const stopInput = parseFloat(document.getElementById("stop").value);
+    const stopType = document.getElementById("stopType").value;
+    const tp = parseFloat(document.getElementById("takeprofit").value);
+    const leverage = parseFloat(document.getElementById("leverage").value || 1);
+    const direction = document.getElementById("direction").value;
+    const currency = document.getElementById("currency").value;
+
+    const symbol = currencySymbols[currency] || "$";
+    const prices = await fetchPrices();
+    const rate = prices[currency] || 1;
+
+    let stopPrice;
+    if (stopType === "price") {
+      stopPrice = stopInput;
+    } else {
+      const percent = stopInput / 100;
+      stopPrice = direction === "long" ? entry * (1 - percent) : entry * (1 + percent);
     }
 
-    document.getElementById("calcForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
+    const riskAmount = balance * (riskPercent / 100);
+    const stopDistance = Math.abs(entry - stopPrice);
+    const tpDistance = Math.abs(tp - entry);
+    const rrRatio = tpDistance > 0 ? (tpDistance / stopDistance).toFixed(2) : "-";
+    const positionSize = stopDistance === 0 ? 0 : riskAmount / stopDistance;
+    const marginUsed = positionSize * entry / leverage;
+    const liquidation = direction === "long" ? entry - (entry / leverage) : entry + (entry / leverage);
 
-      const balance = parseFloat(document.getElementById("balance").value);
-      const riskPercent = parseFloat(document.getElementById("risk").value);
-      const entry = parseFloat(document.getElementById("entry").value);
-      const stopInput = parseFloat(document.getElementById("stop").value);
-      const stopType = document.getElementById("stopType").value;
-      const tp = parseFloat(document.getElementById("takeprofit").value);
-      const leverage = parseFloat(document.getElementById("leverage").value || 1);
-      const direction = document.getElementById("direction").value;
-      const currency = document.getElementById("currency").value;
+    document.getElementById("riskAmount").innerText = `🧮 Risk: ${symbol}${(riskAmount * rate).toFixed(2)}`;
+    document.getElementById("positionSize").innerText = `📌 Size: ${positionSize.toFixed(4)} units`;
+    document.getElementById("liquidationEst").innerText = `💥 Liquidation: $${liquidation.toFixed(2)}`;
+    document.getElementById("marginUsed").innerText = `🔒 Margin: ${symbol}${(marginUsed * rate).toFixed(2)}`;
+    document.getElementById("rrRatio").innerText = `🎯 Risk-Reward Ratio: ${rrRatio}`;
 
-      const symbol = currencySymbols[currency] || "$";
-      const prices = await fetchPrices();
-      const rate = prices[currency] || 1;
+    document.getElementById("resultBox").style.display = "block";
+    document.getElementById("chartSection").style.display = "block";
 
-      let stopPrice;
-      if (stopType === "price") {
-        stopPrice = stopInput;
-      } else {
-        const percent = stopInput / 100;
-        stopPrice = direction === "long" ? entry * (1 - percent) : entry * (1 + percent);
+    const ctx = document.getElementById("priceChart").getContext("2d");
+    if (priceChart) priceChart.destroy();
+
+    const color = direction === "long" ? "#2ecc71" : "#e74c3c";
+    priceChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: ["Stop-Loss", "Entry", "Take-Profit"],
+        datasets: [{
+          label: "Price Levels",
+          data: [stopPrice, entry, tp || entry],
+          fill: false,
+          borderColor: color,
+          pointBackgroundColor: color,
+          tension: 0.2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: false } }
       }
-
-      const riskAmount = balance * (riskPercent / 100);
-      const stopDistance = Math.abs(entry - stopPrice);
-      const tpDistance = Math.abs(tp - entry);
-      const rrRatio = tpDistance > 0 ? (tpDistance / stopDistance).toFixed(2) : "-";
-      const positionSize = stopDistance === 0 ? 0 : riskAmount / stopDistance;
-      const marginUsed = positionSize * entry / leverage;
-      const liquidation = direction === "long" ? entry - (entry / leverage) : entry + (entry / leverage);
-
-      document.getElementById("riskAmount").innerText = `🧮 Risk: ${symbol}${(riskAmount * rate).toFixed(2)}`;
-      document.getElementById("positionSize").innerText = `📌 Size: ${positionSize.toFixed(4)} units`;
-      document.getElementById("liquidationEst").innerText = `💥 Liquidation: $${liquidation.toFixed(2)}`;
-      document.getElementById("marginUsed").innerText = `🔒 Margin: ${symbol}${(marginUsed * rate).toFixed(2)}`;
-      document.getElementById("rrRatio").innerText = `🎯 Risk-Reward Ratio: ${rrRatio}`;
-
-      document.getElementById("resultBox").style.display = "block";
-      document.getElementById("chartSection").style.display = "block";
-
-      const ctx = document.getElementById("priceChart").getContext("2d");
-      if (priceChart) priceChart.destroy();
-
-      const color = direction === "long" ? "#2ecc71" : "#e74c3c";
-      priceChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: ["Stop-Loss", "Entry", "Take-Profit"],
-          datasets: [{
-            label: "Price Levels",
-            data: [stopPrice, entry, tp || entry],
-            fill: false,
-            borderColor: color,
-            pointBackgroundColor: color,
-            tension: 0.2
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: false }
-          }
-        }
-      });
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
