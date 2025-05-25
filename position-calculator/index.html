@@ -94,6 +94,7 @@
       <p id="positionSize"></p>
       <p id="liquidationEst"></p>
       <p id="marginUsed"></p>
+      <p id="rrRatio"></p>
     </div>
 
     <div class="chart-container" id="chartSection" style="display:none;">
@@ -143,6 +144,8 @@
 
       const riskAmount = balance * (riskPercent / 100);
       const stopDistance = Math.abs(entry - stopPrice);
+      const tpDistance = Math.abs(tp - entry);
+      const rrRatio = tpDistance > 0 ? (tpDistance / stopDistance).toFixed(2) : "-";
       const positionSize = stopDistance === 0 ? 0 : riskAmount / stopDistance;
       const marginUsed = positionSize * entry / leverage;
       const liquidation = direction === "long" ? entry - (entry / leverage) : entry + (entry / leverage);
@@ -151,13 +154,15 @@
       document.getElementById("positionSize").innerText = `📌 Size: ${positionSize.toFixed(4)} units`;
       document.getElementById("liquidationEst").innerText = `💥 Liquidation: $${liquidation.toFixed(2)}`;
       document.getElementById("marginUsed").innerText = `🔒 Margin: ${symbol}${(marginUsed * rate).toFixed(2)}`;
-      document.getElementById("resultBox").style.display = "block";
+      document.getElementById("rrRatio").innerText = `🎯 Risk-Reward Ratio: ${rrRatio}`;
 
-      // Chart
+      document.getElementById("resultBox").style.display = "block";
       document.getElementById("chartSection").style.display = "block";
+
       const ctx = document.getElementById("priceChart").getContext("2d");
       if (priceChart) priceChart.destroy();
 
+      const color = direction === "long" ? "#2ecc71" : "#e74c3c";
       priceChart = new Chart(ctx, {
         type: "line",
         data: {
@@ -166,15 +171,16 @@
             label: "Price Levels",
             data: [stopPrice, entry, tp || entry],
             fill: false,
-            borderColor: "#2c3e50",
-            tension: 0.1
+            borderColor: color,
+            pointBackgroundColor: color,
+            tension: 0.2
           }]
         },
         options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
           scales: {
-            y: {
-              beginAtZero: false
-            }
+            y: { beginAtZero: false }
           }
         }
       });
