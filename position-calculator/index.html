@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>📐 Position Size Calculator – CryptoDensities.pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Calculate your ideal crypto trade position size based on risk percentage and stop-loss distance. Secure your portfolio with precision.">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #2c3e50;
+      padding: 15px;
+      color: white;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 30px;
+      background-color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .result p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/">🏠 Home</a>
+    <a href="/market-sentiment/">📊 Market Sentiment</a>
+    <a href="/position-calculator/">📐 Position Size</a>
+  </nav>
+
+  <div class="container">
+    <h1>📐 Crypto Position Size Calculator</h1>
+    <p>Enter your account details to calculate the ideal position size based on your risk tolerance. This tool helps you manage risk effectively in volatile markets like Bitcoin and altcoins.</p>
+
+    <form id="calcForm">
+      <label for="balance">Account Balance ($):</label>
+      <input type="number" id="balance" required step="any" />
+
+      <label for="risk">Risk per Trade (%):</label>
+      <input type="number" id="risk" required step="any" />
+
+      <label for="entry">Entry Price ($):</label>
+      <input type="number" id="entry" required step="any" />
+
+      <label for="stop">Stop-Loss Price ($):</label>
+      <input type="number" id="stop" required step="any" />
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div class="result" id="resultBox" style="display:none;">
+      <h2>📊 Calculation Result</h2>
+      <p id="riskAmount"></p>
+      <p id="positionSize"></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById("calcForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const balance = parseFloat(document.getElementById("balance").value);
+      const riskPercent = parseFloat(document.getElementById("risk").value);
+      const entry = parseFloat(document.getElementById("entry").value);
+      const stop = parseFloat(document.getElementById("stop").value);
+
+      if (stop === entry) {
+        alert("Stop-loss and entry price cannot be the same.");
+        return;
+      }
+
+      const riskAmount = balance * (riskPercent / 100);
+      const stopDistance = Math.abs(entry - stop);
+      const positionSize = stopDistance === 0 ? 0 : riskAmount / stopDistance;
+
+      document.getElementById("riskAmount").innerText = `🧮 Risk Amount: $${riskAmount.toFixed(2)}`;
+      document.getElementById("positionSize").innerText = `📌 Recommended Position Size: ${positionSize.toFixed(4)} units`;
+
+      document.getElementById("resultBox").style.display = "block";
+    });
+  </script>
+</body>
+</html>
