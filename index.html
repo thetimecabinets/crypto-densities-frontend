@@ -3,66 +3,119 @@
 <head>
   <meta charset="UTF-8" />
   <title>🐋 Whale Wall Tracker - CryptoDensities.pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
-      padding: 40px;
-      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav {
+      background-color: #2c3e50;
+      padding: 15px;
+      color: white;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
     .container {
-      width: 100%;
       max-width: 1400px;
-      margin: 0 auto;
+      margin: 40px auto;
+      padding: 0 20px;
       display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
     }
+
     .left-column {
       flex: 2;
-      margin-right: 20px;
+      min-width: 300px;
     }
+
     .right-column {
       flex: 1;
+      min-width: 280px;
       background-color: #fff;
       border: 1px solid #ddd;
       padding: 20px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
+
     h1, h2 {
       color: #2c3e50;
     }
+
     .filters {
       margin-bottom: 15px;
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
     }
+
     .filter-group {
       display: flex;
       align-items: center;
       gap: 5px;
     }
+
     select, button {
       padding: 6px 10px;
       font-size: 14px;
     }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
       background-color: white;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      min-width: 800px;
     }
+
     th, td {
       padding: 12px;
       border-bottom: 1px solid #ddd;
       text-align: left;
     }
+
     .buy { color: green; font-weight: bold; }
     .sell { color: red; font-weight: bold; }
+
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="page2.html">📊 Market Sentiment</a>
+  </nav>
+
   <div class="container">
     <div class="left-column">
       <h1>🐋 Whale Wall Tracker</h1>
@@ -112,16 +165,18 @@
         <button onclick="resetFilters()">Reset</button>
       </div>
 
-      <table id="wallsTable">
-        <thead>
-          <tr>
-            <th>Type</th><th>Exchange</th><th>Coin</th><th>Price ($)</th>
-            <th>Quantity</th><th>Value ($)</th><th>Distance (%)</th>
-            <th>Age</th><th>Volatility</th><th>Volume</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="wallsTable">
+          <thead>
+            <tr>
+              <th>Type</th><th>Exchange</th><th>Coin</th><th>Price ($)</th>
+              <th>Quantity</th><th>Value ($)</th><th>Distance (%)</th>
+              <th>Age</th><th>Volatility</th><th>Volume</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="right-column">
