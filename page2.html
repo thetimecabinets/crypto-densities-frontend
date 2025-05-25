@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>📊 Market Sentiment - CryptoDensities.pro</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      margin: 0;
+      padding: 0;
+    }
+    nav {
+      background-color: #2c3e50;
+      padding: 15px;
+      color: white;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 40px auto;
+      display: flex;
+      gap: 20px;
+      padding: 0 20px;
+    }
+    .left-column {
+      flex: 2;
+    }
+    .right-column {
+      flex: 1;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 20px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .fg-box {
+      padding: 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+    .green { color: green; font-weight: bold; }
+    .red { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="index.html">🏠 Home</a>
+    <a href="page2.html">📊 Market Sentiment</a>
+  </nav>
+
+  <div class="container">
+    <div class="left-column">
+      <h1>📊 Market Sentiment</h1>
+      <div id="fgBox" class="fg-box">Loading Fear & Greed Index...</div>
+
+      <h2>🔥 Top 10 Binance Coins – Price Momentum</h2>
+      <table id="topCoinsTable">
+        <thead>
+          <tr>
+            <th>Coin</th>
+            <th>Price ($)</th>
+            <th>24h Change</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="right-column">
+      <h2>Featured Content</h2>
+      <p>Discover curated tools, insights, and exclusive crypto resources.</p>
+      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
+    </div>
+  </div>
+
+  <script>
+    // 🟢 Load Fear & Greed Index from alternative.me
+    async function loadFearGreed() {
+      try {
+        const res = await fetch("https://api.alternative.me/fng/");
+        const data = await res.json();
+        const { value, value_classification } = data.data[0];
+
+        const fgBox = document.getElementById("fgBox");
+        let bgColor = "#95a5a6"; // Neutral
+        if (value_classification.includes("Extreme Fear")) bgColor = "#e74c3c";
+        else if (value_classification.includes("Fear")) bgColor = "#e67e22";
+        else if (value_classification.includes("Greed")) bgColor = "#2ecc71";
+        if (value_classification.includes("Extreme Greed")) bgColor = "#27ae60";
+
+        fgBox.style.backgroundColor = bgColor;
+        fgBox.innerText = `Fear & Greed Index: ${value} (${value_classification})`;
+      } catch (err) {
+        document.getElementById("fgBox").innerText = "Unable to load Fear & Greed Index.";
+        console.error(err);
+      }
+    }
+
+    // 📉 Load top 10 Binance coins by 24h volume
+    async function loadTopCoins() {
+      try {
+        const res = await fetch("https://api.binance.com/api/v3/ticker/24hr");
+        const allData = await res.json();
+
+        const usdtPairs = allData.filter(d => d.symbol.endsWith("USDT") && !d.symbol.includes("DOWN") && !d.symbol.includes("UP"));
+        const sorted = usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)).slice(0, 10);
+
+        const tbody = document.querySelector("#topCoinsTable tbody");
+        sorted.forEach(item => {
+          const symbol = item.symbol.replace("USDT", "");
+          const price = parseFloat(item.lastPrice).toFixed(2);
+          const change = parseFloat(item.priceChangePercent).toFixed(2);
+          const changeClass = change >= 0 ? "green" : "red";
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${symbol}</td>
+            <td>$${price}</td>
+            <td class="${changeClass}">${change}% ${change >= 0 ? "↑" : "↓"}</td>
+          `;
+          tbody.appendChild(row);
+        });
+      } catch (err) {
+        console.error("Failed to load top coins:", err);
+      }
+    }
+
+    loadFearGreed();
+    loadTopCoins();
+  </script>
+</body>
+</html>
