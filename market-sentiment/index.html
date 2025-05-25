@@ -4,15 +4,9 @@
   <meta charset="UTF-8" />
   <title>📊 Market Sentiment – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Live crypto market sentiment index and price momentum for top coins. Updated automatically with clear visuals.">
+  <meta name="description" content="Explore the Fear and Greed Index and real-time price momentum of the top 10 cryptocurrencies.">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 0;
-    }
-
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
     nav {
       background-color: #2c3e50;
       padding: 15px;
@@ -25,74 +19,57 @@
       top: 0;
       z-index: 1000;
     }
-
     nav a {
       color: white;
       text-decoration: none;
       font-weight: bold;
     }
-
     .container {
       max-width: 1400px;
       margin: 40px auto;
-      padding: 0 20px;
       display: flex;
-      flex-wrap: wrap;
       gap: 20px;
+      flex-wrap: wrap;
+      padding: 0 20px;
     }
-
     .left-column {
       flex: 2;
       min-width: 300px;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-
     .right-column {
       flex: 1;
       min-width: 280px;
-      background-color: #fff;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
       border: 1px solid #ddd;
-      padding: 20px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      height: fit-content;
     }
-
-    .greed-box {
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      color: white;
-      font-size: 24px;
+    h1, h2 {
+      color: #2c3e50;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 10px;
+    }
+    .coin-list {
+      list-style: none;
+      padding: 0;
+    }
+    .coin-list li {
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    .coin-list span {
       font-weight: bold;
-      text-align: center;
     }
-
-    .momentum-table {
-      width: 100%;
-      background-color: white;
-      border-collapse: collapse;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    .momentum-table th, .momentum-table td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-
-    .green { background-color: #2ecc71; }
-    .yellow { background-color: #f1c40f; }
-    .orange { background-color: #e67e22; }
-    .red { background-color: #e74c3c; }
-
     @media (max-width: 768px) {
-      nav {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .container {
-        flex-direction: column;
-      }
+      nav { flex-direction: column; }
+      .container { flex-direction: column; }
     }
   </style>
 </head>
@@ -102,72 +79,49 @@
     <a href="/">🐋 Whale Walls</a>
     <a href="/market-sentiment/">📊 Market Sentiment</a>
     <a href="/position-calculator/">🧮 Position Calculator</a>
+    <a href="/how-to-use-whale-wall/">📘 How It Works</a>
   </nav>
 
   <div class="container">
     <div class="left-column">
-      <h1>📊 Market Sentiment Overview</h1>
+      <h1>📊 Market Sentiment</h1>
+      <p>Stay ahead of the market with real-time indicators.</p>
 
-      <div id="greedBox" class="greed-box green">Loading Fear & Greed Index...</div>
+      <h2>Fear & Greed Index</h2>
+      <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear and Greed Index" />
 
-      <h2>🔥 Price Momentum (Top 10 Coins)</h2>
-      <table class="momentum-table" id="momentumTable">
-        <thead>
-          <tr>
-            <th>Coin</th>
-            <th>Price ($)</th>
-            <th>24h %</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <h2 style="margin-top: 30px;">Top 10 Coin Momentum</h2>
+      <ul class="coin-list" id="coinList">
+        <li>Loading momentum data...</li>
+      </ul>
     </div>
 
     <div class="right-column">
       <h2>Featured Content</h2>
-      <p>Sponsored market tools, affiliate offers, or educational resources.</p>
-      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
+      <p>Explore exclusive analysis, signals, and strategy tools.</p>
+      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad" />
     </div>
   </div>
 
   <script>
-    // Auto-refresh every 5 minutes
-    setInterval(() => location.reload(), 5 * 60 * 1000);
+    async function loadMomentum() {
+      try {
+        const res = await fetch('https://cryptodensities.pro/data/momentum.json');
+        const data = await res.json();
+        const list = document.getElementById('coinList');
+        list.innerHTML = '';
+        data.slice(0, 10).forEach((coin) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<span>${coin.symbol.toUpperCase()}</span>: ${coin.change.toFixed(2)}% (${coin.trend})`;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        document.getElementById('coinList').innerHTML = '<li>Failed to load data.</li>';
+      }
+    }
 
-    // Load Fear & Greed Index from fixed JSON
-    fetch("/data/fear-greed.json")
-      .then(res => res.json())
-      .then(data => {
-        const box = document.getElementById("greedBox");
-        const score = data.value;
-        box.textContent = `Fear & Greed Index: ${score} (${data.status})`;
-
-        const n = parseInt(score);
-        if (n >= 75) box.className = "greed-box green";
-        else if (n >= 50) box.className = "greed-box yellow";
-        else if (n >= 25) box.className = "greed-box orange";
-        else box.className = "greed-box red";
-      })
-      .catch(() => {
-        document.getElementById("greedBox").textContent = "Failed to load data.";
-      });
-
-    // Load Top 10 Coin Momentum from JSON
-    fetch("/data/momentum.json")
-      .then(res => res.json())
-      .then(coins => {
-        const tbody = document.querySelector("#momentumTable tbody");
-        tbody.innerHTML = coins.map(c => `
-          <tr>
-            <td>${c.name}</td>
-            <td>$${parseFloat(c.price).toLocaleString()}</td>
-            <td style="color: ${c.change >= 0 ? 'green' : 'red'};">${c.change.toFixed(2)}%</td>
-          </tr>
-        `).join("");
-      })
-      .catch(() => {
-        document.querySelector("#momentumTable tbody").innerHTML = "<tr><td colspan='3'>Failed to load momentum data.</td></tr>";
-      });
+    loadMomentum();
   </script>
+
 </body>
 </html>
