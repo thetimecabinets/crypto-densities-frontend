@@ -11,6 +11,7 @@
       margin: 0;
       padding: 0;
     }
+
     nav {
       background-color: #2c3e50;
       padding: 15px;
@@ -19,12 +20,17 @@
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
+
     nav a {
       color: white;
       text-decoration: none;
       font-weight: bold;
     }
+
     .container {
       max-width: 1400px;
       margin: 40px auto;
@@ -33,10 +39,12 @@
       flex-wrap: wrap;
       gap: 20px;
     }
+
     .left-column {
       flex: 2;
       min-width: 300px;
     }
+
     .right-column {
       flex: 1;
       min-width: 280px;
@@ -45,9 +53,11 @@
       padding: 20px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
+
     h1, h2 {
       color: #2c3e50;
     }
+
     .fg-box {
       padding: 20px;
       border-radius: 8px;
@@ -57,9 +67,11 @@
       text-align: center;
       margin-bottom: 30px;
     }
+
     .table-container {
       overflow-x: auto;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -67,11 +79,13 @@
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
       min-width: 400px;
     }
+
     th, td {
       padding: 12px;
       border-bottom: 1px solid #ddd;
       text-align: left;
     }
+
     .green { color: green; font-weight: bold; }
     .red { color: red; font-weight: bold; }
 
@@ -80,6 +94,7 @@
         flex-direction: column;
         align-items: center;
       }
+
       .container {
         flex-direction: column;
       }
@@ -121,7 +136,6 @@
   </div>
 
   <script>
-    // 🟢 Load Fear & Greed Index from alternative.me
     async function loadFearGreed() {
       try {
         const res = await fetch("https://api.alternative.me/fng/");
@@ -143,17 +157,23 @@
       }
     }
 
-    // 📉 Load top 10 Binance coins by 24h volume
     async function loadTopCoins() {
       try {
         const res = await fetch("https://api.binance.com/api/v3/ticker/24hr");
         const allData = await res.json();
 
-        const usdtPairs = allData.filter(d => d.symbol.endsWith("USDT") && !d.symbol.includes("DOWN") && !d.symbol.includes("UP"));
-        const sorted = usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)).slice(0, 10);
+        const usdtPairs = allData.filter(d =>
+          d.symbol.endsWith("USDT") &&
+          !d.symbol.includes("DOWN") &&
+          !d.symbol.includes("UP")
+        );
+
+        const sorted = usdtPairs
+          .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
+          .slice(0, 10);
 
         const tbody = document.querySelector("#topCoinsTable tbody");
-        tbody.innerHTML = ""; // clear before inserting
+        tbody.innerHTML = "";
         sorted.forEach(item => {
           const symbol = item.symbol.replace("USDT", "");
           const price = parseFloat(item.lastPrice).toFixed(2);
@@ -175,7 +195,7 @@
     loadFearGreed();
     loadTopCoins();
 
-    // 🔄 Auto-refresh the page every 5 minutes
+    // Auto-refresh every 5 minutes
     setInterval(() => location.reload(), 5 * 60 * 1000);
   </script>
 </body>
