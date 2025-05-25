@@ -1,0 +1,153 @@
+<nav>
+  <a href="/whale-wall-tracker/">🐋 Whale Walls</a>
+  <a href="/market-sentiment/">📊 Market Sentiment</a>
+  <a href="/position-calculator/">📐 Position Size</a>
+</nav>
+
+<div class="container">
+  <div class="left-column">
+    <h1>🐋 Whale Wall Tracker</h1>
+    <p>Live tracking of large limit order walls on Binance and Bybit.</p>
+
+    <div class="filters">
+      <div class="filter-group">
+        <label for="exchangeFilter">Exchange:</label>
+        <select id="exchangeFilter">
+          <option value="">All</option>
+          <option value="Binance">Binance</option>
+          <option value="Bybit">Bybit</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="coinFilter">Coin:</label>
+        <select id="coinFilter"></select>
+      </div>
+      <div class="filter-group">
+        <label for="typeFilter">Type:</label>
+        <select id="typeFilter">
+          <option value="">All</option>
+          <option value="buy">Buy</option>
+          <option value="sell">Sell</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="valueFilter">Value:</label>
+        <select id="valueFilter">
+          <option value="">All</option>
+          <option value="100000">> $100K</option>
+          <option value="250000">> $250K</option>
+          <option value="500000">> $500K</option>
+          <option value="1000000">> $1M</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="ageFilter">Age:</label>
+        <select id="ageFilter">
+          <option value="">All</option>
+          <option value="3600">&lt; 1h</option>
+          <option value="21600">&lt; 6h</option>
+          <option value="86400">&lt; 24h</option>
+          <option value=">86400">&gt; 24h</option>
+        </select>
+      </div>
+      <button onclick="resetFilters()">Reset</button>
+    </div>
+
+    <div class="table-container">
+      <table id="wallsTable">
+        <thead>
+          <tr>
+            <th>Type</th><th>Exchange</th><th>Coin</th><th>Price ($)</th>
+            <th>Quantity</th><th>Value ($)</th><th>Distance (%)</th>
+            <th>Age</th><th>Volatility</th><th>Volume</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="right-column">
+    <h2>Featured Content</h2>
+    <p>Discover curated tools, insights, and exclusive crypto resources.</p>
+    <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
+  </div>
+</div>
+
+<script>
+  let rawData = [];
+
+  function formatNumberShort(n) {
+    if (!n || isNaN(n)) return "N/A";
+    if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+    if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+    if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+    return n.toString();
+  }
+
+  async function fetchData() {
+    try {
+      const res = await fetch("https://api.cryptodensities.pro/api/walls");
+      rawData = await res.json();
+      populateCoinFilter();
+      renderTable();
+    } catch (err) {
+      console.error("Failed to fetch walls:", err);
+    }
+  }
+
+  function populateCoinFilter() {
+    const coinSelect = document.getElementById("coinFilter");
+    const coins = [...new Set(rawData.map(w => w.coin))].sort();
+    coinSelect.innerHTML = '<option value="">All</option>' + coins.map(c => `<option value="${c}">${c}</option>`).join("");
+  }
+
+  function renderTable() {
+    const tbody = document.querySelector("#wallsTable tbody");
+    tbody.innerHTML = "";
+
+    const exchange = document.getElementById("exchangeFilter").value;
+    const coin = document.getElementById("coinFilter").value;
+    const type = document.getElementById("typeFilter").value;
+    const value = parseFloat(document.getElementById("valueFilter").value) || 0;
+    const ageFilter = document.getElementById("ageFilter").value;
+
+    rawData.forEach(w => {
+      if (
+        (exchange && w.exchange !== exchange) ||
+        (coin && w.coin !== coin) ||
+        (type && w.type !== type) ||
+        (w.value < value)
+      ) return;
+
+      if (ageFilter === ">86400" && w.age_seconds <= 86400) return;
+      if (ageFilter && ageFilter !== ">86400" && w.age_seconds > parseFloat(ageFilter)) return;
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td class="${w.type}">${w.type.charAt(0).toUpperCase() + w.type.slice(1)}</td>
+        <td>${w.exchange}</td>
+        <td>${w.coin}</td>
+        <td>${w.price.toLocaleString()}</td>
+        <td>${w.quantity}</td>
+        <td>$${formatNumberShort(w.value)}</td>
+        <td>${w.distance}</td>
+        <td>${w.age}</td>
+        <td>${w.volatility !== undefined && w.volatility !== null ? w.volatility.toFixed(2) + '%' : 'N/A'}</td>
+        <td>$${formatNumberShort(w.volume)}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+
+  function resetFilters() {
+    document.querySelectorAll(".filters select").forEach(select => select.value = "");
+    renderTable();
+  }
+
+  document.querySelectorAll(".filters select").forEach(select => {
+    select.addEventListener("change", renderTable);
+  });
+
+  fetchData();
+</script>
