@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>🐋 Whale Wall Tracker - CryptoDensities.pro</title>
+  <title>📐 Position Size Calculator – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Live crypto whale wall tracker for Binance and Bybit. Track major buy and sell walls in real-time.">
+  <meta name="description" content="Calculate your optimal crypto trade size based on account balance, stop-loss, and risk tolerance.">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -33,79 +33,71 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 600px;
       margin: 40px auto;
-      padding: 0 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-    }
-
-    .left-column {
-      flex: 2;
-      min-width: 300px;
-    }
-
-    .right-column {
-      flex: 1;
-      min-width: 280px;
-      background-color: #fff;
-      border: 1px solid #ddd;
-      padding: 20px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    h1, h2 {
-      color: #2c3e50;
-    }
-
-    .filters {
-      margin-bottom: 15px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .filter-group {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    select, button {
-      padding: 6px 10px;
-      font-size: 14px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
       background-color: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      min-width: 800px;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
     }
 
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
+    h1 {
+      color: #2c3e50;
+      font-size: 24px;
+      margin-bottom: 10px;
+      text-align: center;
     }
 
-    .buy { color: green; font-weight: bold; }
-    .sell { color: red; font-weight: bold; }
+    .subtitle {
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      margin-top: 25px;
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #2c3e50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .result {
+      margin-top: 30px;
+      background-color: #ecf0f1;
+      padding: 20px;
+      border-radius: 8px;
+    }
+
+    .result p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
 
     @media (max-width: 768px) {
       nav {
         flex-direction: column;
         align-items: center;
-      }
-
-      .container {
-        flex-direction: column;
       }
     }
   </style>
@@ -113,157 +105,61 @@
 <body>
 
   <nav>
-    <a href="/">🏠 Home</a>
+    <a href="/">🐋 Whale Walls</a>
     <a href="/market-sentiment/">📊 Market Sentiment</a>
     <a href="/position-calculator/">📐 Position Size</a>
   </nav>
 
   <div class="container">
-    <div class="left-column">
-      <h1>🐋 Whale Wall Tracker</h1>
-      <p>Live tracking of large limit order walls on Binance and Bybit.</p>
+    <h1>📐 Crypto Position Size Calculator</h1>
+    <p class="subtitle">Enter your trade details to calculate position size based on your account and stop-loss.</p>
 
-      <div class="filters">
-        <div class="filter-group">
-          <label for="exchangeFilter">Exchange:</label>
-          <select id="exchangeFilter">
-            <option value="">All</option>
-            <option value="Binance">Binance</option>
-            <option value="Bybit">Bybit</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="coinFilter">Coin:</label>
-          <select id="coinFilter"></select>
-        </div>
-        <div class="filter-group">
-          <label for="typeFilter">Type:</label>
-          <select id="typeFilter">
-            <option value="">All</option>
-            <option value="buy">Buy</option>
-            <option value="sell">Sell</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="valueFilter">Value:</label>
-          <select id="valueFilter">
-            <option value="">All</option>
-            <option value="100000">> $100K</option>
-            <option value="250000">> $250K</option>
-            <option value="500000">> $500K</option>
-            <option value="1000000">> $1M</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label for="ageFilter">Age:</label>
-          <select id="ageFilter">
-            <option value="">All</option>
-            <option value="3600">&lt; 1h</option>
-            <option value="21600">&lt; 6h</option>
-            <option value="86400">&lt; 24h</option>
-            <option value=">86400">&gt; 24h</option>
-          </select>
-        </div>
-        <button onclick="resetFilters()">Reset</button>
-      </div>
+    <form id="calcForm">
+      <label for="balance">Account Balance ($):</label>
+      <input type="number" id="balance" required step="any" />
 
-      <div class="table-container">
-        <table id="wallsTable">
-          <thead>
-            <tr>
-              <th>Type</th><th>Exchange</th><th>Coin</th><th>Price ($)</th>
-              <th>Quantity</th><th>Value ($)</th><th>Distance (%)</th>
-              <th>Age</th><th>Volatility</th><th>Volume</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+      <label for="risk">Risk per Trade (%):</label>
+      <input type="number" id="risk" required step="any" />
 
-    <div class="right-column">
-      <h2>Featured Content</h2>
-      <p>Discover curated tools, insights, and exclusive crypto resources.</p>
-      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Placeholder" style="width: 100%; max-width: 300px;">
+      <label for="entry">Entry Price ($):</label>
+      <input type="number" id="entry" required step="any" />
+
+      <label for="stop">Stop-Loss Price ($):</label>
+      <input type="number" id="stop" required step="any" />
+
+      <button type="submit">Calculate</button>
+    </form>
+
+    <div class="result" id="resultBox" style="display:none;">
+      <h2>📊 Calculation Result</h2>
+      <p id="riskAmount"></p>
+      <p id="positionSize"></p>
     </div>
   </div>
 
   <script>
-    let rawData = [];
+    document.getElementById("calcForm").addEventListener("submit", function (e) {
+      e.preventDefault();
 
-    function formatNumberShort(n) {
-      if (!n || isNaN(n)) return "N/A";
-      if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
-      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-      return n.toString();
-    }
+      const balance = parseFloat(document.getElementById("balance").value);
+      const riskPercent = parseFloat(document.getElementById("risk").value);
+      const entry = parseFloat(document.getElementById("entry").value);
+      const stop = parseFloat(document.getElementById("stop").value);
 
-    async function fetchData() {
-      try {
-        const res = await fetch("https://api.cryptodensities.pro/api/walls");
-        rawData = await res.json();
-        populateCoinFilter();
-        renderTable();
-      } catch (err) {
-        console.error("Failed to fetch walls:", err);
+      if (stop === entry) {
+        alert("Stop-loss and entry price cannot be the same.");
+        return;
       }
-    }
 
-    function populateCoinFilter() {
-      const coinSelect = document.getElementById("coinFilter");
-      const coins = [...new Set(rawData.map(w => w.coin))].sort();
-      coinSelect.innerHTML = '<option value="">All</option>' + coins.map(c => `<option value="${c}">${c}</option>`).join("");
-    }
+      const riskAmount = balance * (riskPercent / 100);
+      const stopDistance = Math.abs(entry - stop);
+      const positionSize = stopDistance === 0 ? 0 : riskAmount / stopDistance;
 
-    function renderTable() {
-      const tbody = document.querySelector("#wallsTable tbody");
-      tbody.innerHTML = "";
+      document.getElementById("riskAmount").innerText = `🧮 Risk Amount: $${riskAmount.toFixed(2)}`;
+      document.getElementById("positionSize").innerText = `📌 Recommended Position Size: ${positionSize.toFixed(4)} units`;
 
-      const exchange = document.getElementById("exchangeFilter").value;
-      const coin = document.getElementById("coinFilter").value;
-      const type = document.getElementById("typeFilter").value;
-      const value = parseFloat(document.getElementById("valueFilter").value) || 0;
-      const ageFilter = document.getElementById("ageFilter").value;
-
-      rawData.forEach(w => {
-        if (
-          (exchange && w.exchange !== exchange) ||
-          (coin && w.coin !== coin) ||
-          (type && w.type !== type) ||
-          (w.value < value)
-        ) return;
-
-        if (ageFilter === ">86400" && w.age_seconds <= 86400) return;
-        if (ageFilter && ageFilter !== ">86400" && w.age_seconds > parseFloat(ageFilter)) return;
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td class="${w.type}">${w.type.charAt(0).toUpperCase() + w.type.slice(1)}</td>
-          <td>${w.exchange}</td>
-          <td>${w.coin}</td>
-          <td>${w.price.toLocaleString()}</td>
-          <td>${w.quantity}</td>
-          <td>$${formatNumberShort(w.value)}</td>
-          <td>${w.distance}</td>
-          <td>${w.age}</td>
-          <td>${w.volatility !== undefined && w.volatility !== null ? w.volatility.toFixed(2) + '%' : 'N/A'}</td>
-          <td>$${formatNumberShort(w.volume)}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function resetFilters() {
-      document.querySelectorAll(".filters select").forEach(select => select.value = "");
-      renderTable();
-    }
-
-    document.querySelectorAll(".filters select").forEach(select => {
-      select.addEventListener("change", renderTable);
+      document.getElementById("resultBox").style.display = "block";
     });
-
-    fetchData();
   </script>
 </body>
 </html>
