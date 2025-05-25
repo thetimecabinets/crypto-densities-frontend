@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>📊 Market Sentiment - CryptoDensities.pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -15,8 +16,9 @@
       padding: 15px;
       color: white;
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
-      gap: 40px;
+      gap: 20px;
     }
     nav a {
       color: white;
@@ -26,21 +28,24 @@
     .container {
       max-width: 1400px;
       margin: 40px auto;
-      display: flex;
-      gap: 20px;
       padding: 0 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
     }
     .left-column {
       flex: 2;
+      min-width: 300px;
     }
     .right-column {
       flex: 1;
+      min-width: 280px;
       background-color: #fff;
       border: 1px solid #ddd;
       padding: 20px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
-    h1 {
+    h1, h2 {
       color: #2c3e50;
     }
     .fg-box {
@@ -52,11 +57,15 @@
       text-align: center;
       margin-bottom: 30px;
     }
+    .table-container {
+      overflow-x: auto;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
       background-color: white;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      min-width: 400px;
     }
     th, td {
       padding: 12px;
@@ -65,6 +74,16 @@
     }
     .green { color: green; font-weight: bold; }
     .red { color: red; font-weight: bold; }
+
+    @media (max-width: 768px) {
+      nav {
+        flex-direction: column;
+        align-items: center;
+      }
+      .container {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
@@ -80,16 +99,18 @@
       <div id="fgBox" class="fg-box">Loading Fear & Greed Index...</div>
 
       <h2>🔥 Top 10 Binance Coins – Price Momentum</h2>
-      <table id="topCoinsTable">
-        <thead>
-          <tr>
-            <th>Coin</th>
-            <th>Price ($)</th>
-            <th>24h Change</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table id="topCoinsTable">
+          <thead>
+            <tr>
+              <th>Coin</th>
+              <th>Price ($)</th>
+              <th>24h Change</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="right-column">
@@ -132,6 +153,7 @@
         const sorted = usdtPairs.sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume)).slice(0, 10);
 
         const tbody = document.querySelector("#topCoinsTable tbody");
+        tbody.innerHTML = ""; // clear before inserting
         sorted.forEach(item => {
           const symbol = item.symbol.replace("USDT", "");
           const price = parseFloat(item.lastPrice).toFixed(2);
@@ -152,6 +174,9 @@
 
     loadFearGreed();
     loadTopCoins();
+
+    // 🔄 Auto-refresh the page every 5 minutes
+    setInterval(() => location.reload(), 5 * 60 * 1000);
   </script>
 </body>
 </html>
