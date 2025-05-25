@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <title>📊 Market Sentiment – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Explore the Fear and Greed Index and real-time price momentum of the top 10 cryptocurrencies.">
+  <meta name="description" content="Live market sentiment with Fear & Greed Index and top crypto coin momentum. Updated every 5 minutes.">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f9f9f9; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4; }
     nav {
       background-color: #2c3e50;
       padding: 15px;
@@ -25,50 +25,47 @@
       font-weight: bold;
     }
     .container {
-      max-width: 1400px;
-      margin: 40px auto;
       display: flex;
       gap: 20px;
       flex-wrap: wrap;
+      max-width: 1400px;
+      margin: 40px auto;
       padding: 0 20px;
     }
     .left-column {
       flex: 2;
       min-width: 300px;
-      background: white;
+      background: #fff;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 6px rgba(0,0,0,0.05);
     }
     .right-column {
       flex: 1;
       min-width: 280px;
-      background: white;
+      background: #fff;
       padding: 20px;
       border-radius: 10px;
       border: 1px solid #ddd;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      box-shadow: 0 0 6px rgba(0,0,0,0.05);
     }
-    h1, h2 {
-      color: #2c3e50;
-    }
+    h1, h2 { color: #2c3e50; }
     img {
       max-width: 100%;
-      border-radius: 10px;
+      border-radius: 8px;
+      margin-top: 10px;
     }
-    .coin-list {
-      list-style: none;
-      padding: 0;
-    }
-    .coin-list li {
+    ul { list-style: none; padding: 0; }
+    li {
       margin-bottom: 10px;
       font-size: 16px;
+      padding: 6px 10px;
+      border-radius: 5px;
+      background-color: #f8f8f8;
+      box-shadow: inset 0 0 2px rgba(0,0,0,0.05);
     }
-    .coin-list span {
-      font-weight: bold;
-    }
-    .up { color: green; }
-    .down { color: red; }
+    .up { color: green; font-weight: bold; }
+    .down { color: red; font-weight: bold; }
     @media (max-width: 768px) {
       nav { flex-direction: column; }
       .container { flex-direction: column; }
@@ -87,21 +84,21 @@
   <div class="container">
     <div class="left-column">
       <h1>📊 Market Sentiment</h1>
-      <p>Stay ahead of the market with real-time indicators.</p>
+      <p>This section gives you a real-time feeling of the market based on fear and greed, as well as momentum shifts in the top cryptocurrencies.</p>
 
       <h2>Fear & Greed Index</h2>
-      <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear and Greed Index" />
+      <img src="https://alternative.me/crypto/fear-and-greed-index.png" alt="Fear and Greed Index">
 
       <h2 style="margin-top: 30px;">Top 10 Coin Momentum</h2>
-      <ul class="coin-list" id="coinList">
-        <li>Loading data...</li>
+      <ul id="coinList">
+        <li>Loading momentum data...</li>
       </ul>
     </div>
 
     <div class="right-column">
       <h2>Featured Content</h2>
-      <p>Explore exclusive analysis, signals, and strategy tools.</p>
-      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad" />
+      <p>Explore tools, market data, and premium crypto research.</p>
+      <img src="https://via.placeholder.com/300x250?text=Your+Ad+Here" alt="Ad Slot">
     </div>
   </div>
 
@@ -113,9 +110,9 @@
         const list = document.getElementById('coinList');
         list.innerHTML = '';
 
-        data.slice(0, 10).forEach((coin) => {
-          const li = document.createElement('li');
+        data.slice(0, 10).forEach(coin => {
           const trendClass = coin.trend.toLowerCase() === 'up' ? 'up' : 'down';
+          const li = document.createElement('li');
           li.innerHTML = `<span>${coin.symbol.toUpperCase()}</span>: <span class="${trendClass}">${coin.change.toFixed(2)}% ${coin.trend}</span>`;
           list.appendChild(li);
         });
