@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>📊 Market Sentiment – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Live crypto market sentiment index and price momentum for top coins. Updated regularly with visual insights.">
+  <meta name="description" content="Live crypto market sentiment index and price momentum for top coins. Updated automatically with clear visuals.">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -99,7 +99,7 @@
 <body>
 
   <nav>
-    <a href="/whale-wall-tracker/">🐋 Whale Walls</a>
+    <a href="/">🐋 Whale Walls</a>
     <a href="/market-sentiment/">📊 Market Sentiment</a>
     <a href="/position-calculator/">📐 Position Size</a>
   </nav>
@@ -142,7 +142,6 @@
         const score = data.value;
         box.textContent = `Fear & Greed Index: ${score} (${data.status})`;
 
-        // Color code
         const n = parseInt(score);
         if (n >= 75) box.className = "greed-box green";
         else if (n >= 50) box.className = "greed-box yellow";
