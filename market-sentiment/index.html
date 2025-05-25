@@ -67,6 +67,8 @@
     .coin-list span {
       font-weight: bold;
     }
+    .up { color: green; }
+    .down { color: red; }
     @media (max-width: 768px) {
       nav { flex-direction: column; }
       .container { flex-direction: column; }
@@ -92,7 +94,7 @@
 
       <h2 style="margin-top: 30px;">Top 10 Coin Momentum</h2>
       <ul class="coin-list" id="coinList">
-        <li>Loading momentum data...</li>
+        <li>Loading data...</li>
       </ul>
     </div>
 
@@ -106,17 +108,19 @@
   <script>
     async function loadMomentum() {
       try {
-        const res = await fetch('https://cryptodensities.pro/data/momentum.json');
+        const res = await fetch('/data/momentum.json');
         const data = await res.json();
         const list = document.getElementById('coinList');
         list.innerHTML = '';
+
         data.slice(0, 10).forEach((coin) => {
           const li = document.createElement('li');
-          li.innerHTML = `<span>${coin.symbol.toUpperCase()}</span>: ${coin.change.toFixed(2)}% (${coin.trend})`;
+          const trendClass = coin.trend.toLowerCase() === 'up' ? 'up' : 'down';
+          li.innerHTML = `<span>${coin.symbol.toUpperCase()}</span>: <span class="${trendClass}">${coin.change.toFixed(2)}% ${coin.trend}</span>`;
           list.appendChild(li);
         });
       } catch (err) {
-        document.getElementById('coinList').innerHTML = '<li>Failed to load data.</li>';
+        document.getElementById('coinList').innerHTML = '<li style="color:red;">⚠️ Failed to load momentum data.</li>';
       }
     }
 
