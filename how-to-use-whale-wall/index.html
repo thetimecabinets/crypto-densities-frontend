@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>📘 How to Use the Whale Wall Tracker – CryptoDensities.pro</title>
+  <meta name="description" content="Learn how to read and use the Whale Wall Tracker. Understand what each column means and how to trade using whale limit order walls.">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; margin: 0; padding: 0; }
+    nav { background: #2c3e50; padding: 15px; color: white; display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; position: sticky; top: 0; z-index: 999; }
+    nav a { color: white; text-decoration: none; font-weight: bold; }
+    .container { max-width: 800px; margin: 40px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+    h1, h2 { color: #2c3e50; }
+    section { margin-bottom: 30px; }
+    .icon { font-size: 1.4em; margin-right: 6px; }
+    ul { padding-left: 20px; }
+    li { margin-bottom: 10px; }
+    .highlight { font-weight: bold; color: #2c3e50; }
+    @media (max-width: 768px) {
+      nav { flex-direction: column; }
+      .container { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/">🐋 Whale Walls</a>
+  <a href="/market-sentiment/">📊 Market Sentiment</a>
+  <a href="/position-calculator/">🧮 Position Calculator</a>
+  <a href="/how-to-use-whale-wall/">📘 How It Works</a>
+</nav>
+
+<div class="container">
+  <h1>📘 How to Use the Whale Wall Tracker</h1>
+  <p>Our whale wall table helps you detect large hidden limit orders that can impact the market. Here's what each column means and how you can use the data to make smart trading decisions.</p>
+
+  <section>
+    <h2>📊 What Each Column Means</h2>
+    <ul>
+      <li><span class="icon">📈</span><span class="highlight">Type:</span> Buy (green) or Sell (red) limit wall.</li>
+      <li><span class="icon">🏦</span><span class="highlight">Exchange:</span> The platform the order is on, like Binance or Bybit.</li>
+      <li><span class="icon">🪙</span><span class="highlight">Coin:</span> The cryptocurrency involved (e.g. BTC, ETH).</li>
+      <li><span class="icon">💵</span><span class="highlight">Price:</span> Exact price level of the wall.</li>
+      <li><span class="icon">🔢</span><span class="highlight">Quantity:</span> Number of coins in the wall.</li>
+      <li><span class="icon">💰</span><span class="highlight">Value ($):</span> Total value of the wall (price × quantity).</li>
+      <li><span class="icon">📉</span><span class="highlight">Distance (%):</span> How far the wall is from current market price.</li>
+      <li><span class="icon">⏳</span><span class="highlight">Age:</span> How long the wall has existed.</li>
+      <li><span class="icon">⚡</span><span class="highlight">Volatility:</span> Price volatility around the wall (coming soon).</li>
+      <li><span class="icon">📊</span><span class="highlight">Volume:</span> 24h trading volume of the asset.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>🧠 How to Use It for Trading</h2>
+    <ul>
+      <li><span class="icon">🚧</span><strong>Big Buy Walls</strong> can act as support — price might bounce off.</li>
+      <li><span class="icon">🧱</span><strong>Big Sell Walls</strong> act like resistance — price might reject there.</li>
+      <li><span class="icon">👀</span>Track changes in wall size and position — shrinking walls may mean breakout coming.</li>
+      <li><span class="icon">🎯</span>Combine this with other signals (volume, RSI, momentum) for best results.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>📌 Example</h2>
+    <p>If BTC is trading at <strong>$27,000</strong> and there’s a <strong>buy wall at $26,500</strong> worth <strong>$2M</strong>:</p>
+    <ul>
+      <li>That price may be defended</li>
+      <li>You could enter a long trade near $26,600</li>
+      <li>Set your stop-loss below the wall (e.g. $26,450)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>❓ Frequently Asked</h2>
+    <ul>
+      <li><strong>Q: Are these real orders?</strong><br>A: Yes, they are live limit orders from real order books.</li>
+      <li><strong>Q: Why do they disappear?</strong><br>A: Some whales cancel or move their walls to manipulate price.</li>
+      <li><strong>Q: Can I see more exchanges?</strong><br>A: We're adding more soon. Currently Binance & Bybit are included.</li>
+    </ul>
+  </section>
+</div>
+
+</body>
+</html>
