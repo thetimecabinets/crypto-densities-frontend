@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <title>🐋 Whale Wall Tracker – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Real-time crypto whale wall tracker with clustering, insights, and pulsing alerts.">
+  <meta name="description" content="Track large crypto whale orders with insights, price clusters and market alerts.">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #161b22;
-      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 0;
+      background: radial-gradient(circle at top, #f4f2ff 0%, #ffffff 100%);
+      color: #222;
     }
 
     nav {
-      background-color: #0d1117;
+      background-color: #ffffffcc;
       padding: 15px;
       display: flex;
       flex-wrap: wrap;
@@ -24,10 +24,11 @@
       position: sticky;
       top: 0;
       z-index: 1000;
+      backdrop-filter: blur(8px);
     }
 
     nav a {
-      color: #58a6ff;
+      color: #222;
       text-decoration: none;
       font-weight: bold;
     }
@@ -38,8 +39,8 @@
       padding: 0 20px;
     }
 
-    h1, h2 {
-      color: #58a6ff;
+    h1 {
+      color: #3a3a3a;
     }
 
     .filters, .tabs {
@@ -58,51 +59,49 @@
     select, button {
       padding: 6px 10px;
       font-size: 14px;
-      background: #21262d;
-      color: #e0e0e0;
-      border: 1px solid #30363d;
     }
 
     .tab-button {
-      background-color: #21262d;
-      border: 1px solid #30363d;
-      color: #c9d1d9;
+      background: #eeeeee;
+      border: 1px solid #ccc;
+      color: #222;
       padding: 8px 14px;
       cursor: pointer;
       font-weight: bold;
+      border-radius: 6px;
     }
 
     .tab-button.active {
-      background-color: #58a6ff;
-      color: #0d1117;
+      background: #6c63ff;
+      color: white;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #0d1117;
-      box-shadow: 0 0 5px rgba(88,166,255,0.2);
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
       margin-bottom: 40px;
     }
 
     th, td {
       padding: 12px;
-      border-bottom: 1px solid #30363d;
+      border-bottom: 1px solid #ddd;
       text-align: left;
     }
 
-    .buy { color: #39d353; font-weight: bold; }
-    .sell { color: #ff7b72; font-weight: bold; }
+    .buy { color: green; font-weight: bold; }
+    .sell { color: red; font-weight: bold; }
 
     .pulse {
       animation: pulseGlow 1.5s ease-in-out infinite;
-      background-color: #1a2632 !important;
+      background-color: #fffaf0;
     }
 
     @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0 rgba(88, 166, 255, 0); }
-      50% { box-shadow: 0 0 10px rgba(88, 166, 255, 0.7); }
-      100% { box-shadow: 0 0 0 rgba(88, 166, 255, 0); }
+      0% { box-shadow: 0 0 0 rgba(255, 173, 0, 0); }
+      50% { box-shadow: 0 0 12px rgba(255, 173, 0, 0.6); }
+      100% { box-shadow: 0 0 0 rgba(255, 173, 0, 0); }
     }
 
     .tooltip {
@@ -114,8 +113,8 @@
     .tooltip .tooltiptext {
       visibility: hidden;
       width: 220px;
-      background-color: #2a2f3a;
-      color: #fff;
+      background: #444;
+      color: white;
       text-align: center;
       border-radius: 6px;
       padding: 8px;
@@ -126,7 +125,6 @@
       margin-left: -110px;
       opacity: 0;
       transition: opacity 0.3s;
-      box-shadow: 0 0 10px #58a6ff;
     }
 
     .tooltip:hover .tooltiptext {
@@ -199,7 +197,114 @@
     <div id="coinTablesContainer"></div>
   </div>
 
-  <!-- JS loaded externally or added below -->
+  <script>
+    let rawData = [];
+    let insights = {};
+    let activeCoin = "";
 
+    async function fetchData() {
+      const wallRes = await fetch("https://api.cryptodensities.pro/api/walls");
+      const insightsRes = await fetch("/data/wall-insights.json");
+      rawData = await wallRes.json();
+      insights = await insightsRes.json();
+      renderTabs();
+      setActiveCoin([...new Set(rawData.map(w => w.coin))][0]); // fixes no-table bug
+    }
+
+    function formatNumberShort(n) {
+      if (!n || isNaN(n)) return "N/A";
+      if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+      return n.toString();
+    }
+
+    function renderTabs() {
+      const tabs = document.getElementById("coinTabs");
+      const coins = [...new Set(rawData.map(w => w.coin))].sort();
+      tabs.innerHTML = coins.map((coin, i) => `
+        <button class="tab-button ${i === 0 ? 'active' : ''}" onclick="setActiveCoin('${coin}')">${coin}</button>
+      `).join("");
+    }
+
+    function setActiveCoin(coin) {
+      activeCoin = coin;
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === coin);
+      });
+      renderTables();
+    }
+
+    function resetFilters() {
+      document.querySelectorAll(".filters select").forEach(select => select.value = "");
+      renderTables();
+    }
+
+    document.querySelectorAll(".filters select").forEach(select => {
+      select.addEventListener("change", renderTables);
+    });
+
+    function renderTables() {
+      const container = document.getElementById("coinTablesContainer");
+      container.innerHTML = "";
+
+      const exchange = document.getElementById("exchangeFilter").value;
+      const type = document.getElementById("typeFilter").value;
+      const value = parseFloat(document.getElementById("valueFilter").value) || 0;
+      const ageFilter = document.getElementById("ageFilter").value;
+
+      const filtered = rawData.filter(w => {
+        return w.coin === activeCoin &&
+          (!exchange || w.exchange === exchange) &&
+          (!type || w.type === type) &&
+          (!value || w.value >= value) &&
+          (
+            !ageFilter ||
+            (ageFilter === ">86400" && w.age_seconds > 86400) ||
+            (ageFilter !== ">86400" && w.age_seconds <= parseFloat(ageFilter))
+          );
+      });
+
+      const rows = filtered.map(w => {
+        let icon = "";
+        if (w.age_seconds <= 60) icon = "🆕";
+        else if (w.value > 1_000_000) icon = "🔥";
+        else if (w.value > 500_000) icon = "🐋";
+
+        const pulseClass = w.age_seconds <= 60 ? "pulse" : "";
+        const insight = insights?.[`${w.coin}_${w.price}`] || "No insights available";
+
+        return `
+          <tr class="${pulseClass}">
+            <td class="${w.type}">${icon} ${w.type.charAt(0).toUpperCase() + w.type.slice(1)}
+              <span class="tooltip">🧠<span class="tooltiptext">${insight}</span></span>
+            </td>
+            <td>${w.exchange}</td>
+            <td>${w.price.toLocaleString()}</td>
+            <td>${w.quantity}</td>
+            <td>$${formatNumberShort(w.value)}</td>
+            <td>${w.distance}</td>
+            <td>${w.age}</td>
+            <td>${w.volatility ?? 'N/A'}</td>
+            <td>$${formatNumberShort(w.volume)}</td>
+          </tr>
+        `;
+      }).join("");
+
+      container.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Type</th><th>Exchange</th><th>Price ($)</th><th>Quantity</th>
+              <th>Value ($)</th><th>Distance (%)</th><th>Age</th><th>Volatility</th><th>Volume</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+
+    fetchData();
+  </script>
 </body>
 </html>
