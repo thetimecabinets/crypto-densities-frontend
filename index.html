@@ -8,7 +8,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
+      background-color: #f3e5f5; /* Light Purple */
       margin: 0;
       padding: 0;
     }
@@ -32,10 +32,25 @@
       font-weight: bold;
     }
 
-    .container {
+    .main-layout {
+      display: flex;
       max-width: 1400px;
       margin: 40px auto;
       padding: 0 20px;
+      gap: 30px;
+    }
+
+    .content {
+      flex: 3;
+    }
+
+    .sidebar {
+      flex: 1;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      height: fit-content;
     }
 
     h1, h2 {
@@ -66,10 +81,11 @@
       padding: 8px 14px;
       cursor: pointer;
       font-weight: bold;
+      border-radius: 5px;
     }
 
     .tab-button.active {
-      background-color: #2c3e50;
+      background-color: #6a1b9a;
       color: white;
     }
 
@@ -109,6 +125,12 @@
       100% { box-shadow: 0 0 0px rgba(255,165,0,0); }
     }
 
+    @media (max-width: 900px) {
+      .main-layout {
+        flex-direction: column;
+      }
+    }
+
     @media (max-width: 768px) {
       nav {
         flex-direction: column;
@@ -129,52 +151,62 @@
     <a href="/how-to-use-whale-wall/">📘 How It Works</a>
   </nav>
 
-  <div class="container">
-    <h1>🐋 Whale Wall Tracker by Coin</h1>
-    <p>Live tracking of large limit order walls on Binance and Bybit, grouped by coin.</p>
+  <div class="main-layout">
+    <div class="content">
+      <h1>🐋 Whale Wall Tracker by Coin</h1>
+      <p>Experience real-time monitoring of massive buy and sell walls across major crypto pairs. Filter, explore, and react to where the smart money is placing resistance and support — instantly and by coin.</p>
 
-    <div class="filters">
-      <div class="filter-group">
-        <label for="exchangeFilter">Exchange:</label>
-        <select id="exchangeFilter">
-          <option value="">All</option>
-          <option value="Binance">Binance</option>
-          <option value="Bybit">Bybit</option>
-        </select>
+      <div class="filters">
+        <div class="filter-group">
+          <label for="exchangeFilter">Exchange:</label>
+          <select id="exchangeFilter">
+            <option value="">All</option>
+            <option value="Binance">Binance</option>
+            <option value="Bybit">Bybit</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="typeFilter">Type:</label>
+          <select id="typeFilter">
+            <option value="">All</option>
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="valueFilter">Value:</label>
+          <select id="valueFilter">
+            <option value="">All</option>
+            <option value="100000">> $100K</option>
+            <option value="250000">> $250K</option>
+            <option value="500000">> $500K</option>
+            <option value="1000000">> $1M</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="ageFilter">Age:</label>
+          <select id="ageFilter">
+            <option value="">All</option>
+            <option value="3600">&lt; 1h</option>
+            <option value="21600">&lt; 6h</option>
+            <option value="86400">&lt; 24h</option>
+            <option value=">86400">&gt; 24h</option>
+          </select>
+        </div>
+        <button onclick="resetFilters()">Reset</button>
       </div>
-      <div class="filter-group">
-        <label for="typeFilter">Type:</label>
-        <select id="typeFilter">
-          <option value="">All</option>
-          <option value="buy">Buy</option>
-          <option value="sell">Sell</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label for="valueFilter">Value:</label>
-        <select id="valueFilter">
-          <option value="">All</option>
-          <option value="100000">> $100K</option>
-          <option value="250000">> $250K</option>
-          <option value="500000">> $500K</option>
-          <option value="1000000">> $1M</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <label for="ageFilter">Age:</label>
-        <select id="ageFilter">
-          <option value="">All</option>
-          <option value="3600">&lt; 1h</option>
-          <option value="21600">&lt; 6h</option>
-          <option value="86400">&lt; 24h</option>
-          <option value=">86400">&gt; 24h</option>
-        </select>
-      </div>
-      <button onclick="resetFilters()">Reset</button>
+
+      <div class="tabs" id="coinTabs"></div>
+      <div id="coinTablesContainer"></div>
     </div>
 
-    <div class="tabs" id="coinTabs"></div>
-    <div id="coinTablesContainer"></div>
+    <div class="sidebar">
+      <h2>📌 Featured Content</h2>
+      <p>🧠 Learn how to interpret whale walls and price reaction zones.</p>
+      <p>💡 Tip: Combine order wall data with momentum shifts to detect fakeouts.</p>
+      <p>🔥 Popular tools: <a href="/position-calculator/">Position Calculator</a></p>
+      <p>📘 Don’t miss: <a href="/how-to-use-whale-wall/">How This Works</a></p>
+    </div>
   </div>
 
   <script>
@@ -202,7 +234,16 @@
 
     function renderTabs() {
       const tabs = document.getElementById("coinTabs");
-      const coins = [...new Set(rawData.map(w => w.coin))].sort();
+      let coins = [...new Set(rawData.map(w => w.coin))];
+
+      coins.sort((a, b) => {
+        if (a === 'BTC') return -1;
+        if (b === 'BTC') return 1;
+        if (a === 'ETH') return -1;
+        if (b === 'ETH') return 1;
+        return a.localeCompare(b);
+      });
+
       tabs.innerHTML = coins.map((coin, i) => `
         <button class="tab-button ${i === 0 ? 'active' : ''}" onclick="setActiveCoin('${coin}')">${coin}</button>
       `).join("");
@@ -212,7 +253,7 @@
     function setActiveCoin(coin) {
       activeCoin = coin;
       document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll(`.tab-button`).forEach(btn => {
+      document.querySelectorAll('.tab-button').forEach(btn => {
         if (btn.innerText === coin) btn.classList.add('active');
       });
       renderTables();
