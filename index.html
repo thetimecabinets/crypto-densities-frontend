@@ -8,14 +8,14 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      background: #161b22;
+      color: #e0e0e0;
       margin: 0;
       padding: 0;
-      background: #0d1117;
-      color: #e0e0e0;
     }
 
     nav {
-      background-color: #151a24;
+      background-color: #0d1117;
       padding: 15px;
       display: flex;
       flex-wrap: wrap;
@@ -80,7 +80,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #161b22;
+      background-color: #0d1117;
       box-shadow: 0 0 5px rgba(88,166,255,0.2);
       margin-bottom: 40px;
     }
@@ -199,115 +199,7 @@
     <div id="coinTablesContainer"></div>
   </div>
 
-  <script>
-    let rawData = [];
-    let insights = {};
-    let activeCoin = "";
+  <!-- JS loaded externally or added below -->
 
-    async function fetchData() {
-      const wallRes = await fetch("https://api.cryptodensities.pro/api/walls");
-      const insightsRes = await fetch("/data/wall-insights.json");
-      rawData = await wallRes.json();
-      insights = await insightsRes.json();
-      renderTabs();
-      renderTables();
-    }
-
-    function formatNumberShort(n) {
-      if (!n || isNaN(n)) return "N/A";
-      if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
-      if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
-      if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
-      return n.toString();
-    }
-
-    function renderTabs() {
-      const tabs = document.getElementById("coinTabs");
-      const coins = [...new Set(rawData.map(w => w.coin))].sort();
-      tabs.innerHTML = coins.map((coin, i) => `
-        <button class="tab-button ${i === 0 ? 'active' : ''}" onclick="setActiveCoin('${coin}')">${coin}</button>
-      `).join("");
-      activeCoin = coins[0];
-    }
-
-    function setActiveCoin(coin) {
-      activeCoin = coin;
-      document.querySelectorAll('.tab-button').forEach(btn => {
-        btn.classList.toggle('active', btn.innerText === coin);
-      });
-      renderTables();
-    }
-
-    function resetFilters() {
-      document.querySelectorAll(".filters select").forEach(select => select.value = "");
-      renderTables();
-    }
-
-    document.querySelectorAll(".filters select").forEach(select => {
-      select.addEventListener("change", renderTables);
-    });
-
-    function renderTables() {
-      const container = document.getElementById("coinTablesContainer");
-      container.innerHTML = "";
-
-      const exchange = document.getElementById("exchangeFilter").value;
-      const type = document.getElementById("typeFilter").value;
-      const value = parseFloat(document.getElementById("valueFilter").value) || 0;
-      const ageFilter = document.getElementById("ageFilter").value;
-
-      const filtered = rawData.filter(w => {
-        return w.coin === activeCoin &&
-          (!exchange || w.exchange === exchange) &&
-          (!type || w.type === type) &&
-          (!value || w.value >= value) &&
-          (
-            !ageFilter ||
-            (ageFilter === ">86400" && w.age_seconds > 86400) ||
-            (ageFilter !== ">86400" && w.age_seconds <= parseFloat(ageFilter))
-          );
-      });
-
-      const rows = filtered.map(w => {
-        let icon = "";
-        if (w.age_seconds <= 60) icon = "🆕";
-        else if (w.value > 1000000) icon = "🔥";
-        else if (w.value > 500000) icon = "🐋";
-
-        const pulseClass = w.age_seconds <= 60 ? "pulse" : "";
-        const insight = insights?.[`${w.coin}_${w.price}`] || "No insights available";
-
-        return `
-          <tr class="${pulseClass}">
-            <td class="${w.type}">${icon} ${w.type.charAt(0).toUpperCase() + w.type.slice(1)}
-              <span class="tooltip">🧠<span class="tooltiptext">${insight}</span></span>
-            </td>
-            <td>${w.exchange}</td>
-            <td>${w.price.toLocaleString()}</td>
-            <td>${w.quantity}</td>
-            <td>$${formatNumberShort(w.value)}</td>
-            <td>${w.distance}</td>
-            <td>${w.age}</td>
-            <td>${w.volatility ?? 'N/A'}</td>
-            <td>$${formatNumberShort(w.volume)}</td>
-          </tr>
-        `;
-      }).join("");
-
-      container.innerHTML = `
-        <table>
-          <thead>
-            <tr>
-              <th>Type</th><th>Exchange</th><th>Price ($)</th><th>Quantity</th>
-              <th>Value ($)</th><th>Distance (%)</th><th>Age</th><th>Volatility</th><th>Volume</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      `;
-    }
-
-    fetchData();
-  </script>
 </body>
 </html>
