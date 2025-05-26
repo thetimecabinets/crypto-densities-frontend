@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <title>🐋 Whale Wall Tracker – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Track real-time crypto whale buy and sell walls by coin. Visualize price levels with high liquidity resistance.">
+  <meta name="description" content="Real-time crypto whale wall tracker with clustering, insights, and pulsing alerts.">
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f9f9f9;
       margin: 0;
       padding: 0;
+      background: #0d1117;
+      color: #e0e0e0;
     }
 
     nav {
-      background-color: #2c3e50;
+      background-color: #151a24;
       padding: 15px;
-      color: white;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -27,7 +27,7 @@
     }
 
     nav a {
-      color: white;
+      color: #58a6ff;
       text-decoration: none;
       font-weight: bold;
     }
@@ -39,7 +39,7 @@
     }
 
     h1, h2 {
-      color: #2c3e50;
+      color: #58a6ff;
     }
 
     .filters, .tabs {
@@ -58,64 +58,86 @@
     select, button {
       padding: 6px 10px;
       font-size: 14px;
+      background: #21262d;
+      color: #e0e0e0;
+      border: 1px solid #30363d;
     }
 
     .tab-button {
-      background-color: #e0e0e0;
-      border: none;
+      background-color: #21262d;
+      border: 1px solid #30363d;
+      color: #c9d1d9;
       padding: 8px 14px;
       cursor: pointer;
       font-weight: bold;
     }
 
     .tab-button.active {
-      background-color: #2c3e50;
-      color: white;
-    }
-
-    .coin-table {
-      display: none;
-    }
-
-    .coin-table.active {
-      display: block;
+      background-color: #58a6ff;
+      color: #0d1117;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      background-color: #161b22;
+      box-shadow: 0 0 5px rgba(88,166,255,0.2);
       margin-bottom: 40px;
     }
 
     th, td {
       padding: 12px;
-      border-bottom: 1px solid #ddd;
+      border-bottom: 1px solid #30363d;
       text-align: left;
     }
 
-    .buy { color: green; font-weight: bold; }
-    .sell { color: red; font-weight: bold; }
+    .buy { color: #39d353; font-weight: bold; }
+    .sell { color: #ff7b72; font-weight: bold; }
 
     .pulse {
       animation: pulseGlow 1.5s ease-in-out infinite;
-      background-color: #fff8e1 !important;
+      background-color: #1a2632 !important;
     }
 
     @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0px rgba(255,165,0,0); }
-      50% { box-shadow: 0 0 10px rgba(255,165,0,0.8); }
-      100% { box-shadow: 0 0 0px rgba(255,165,0,0); }
+      0% { box-shadow: 0 0 0 rgba(88, 166, 255, 0); }
+      50% { box-shadow: 0 0 10px rgba(88, 166, 255, 0.7); }
+      100% { box-shadow: 0 0 0 rgba(88, 166, 255, 0); }
+    }
+
+    .tooltip {
+      position: relative;
+      display: inline-block;
+      cursor: help;
+    }
+
+    .tooltip .tooltiptext {
+      visibility: hidden;
+      width: 220px;
+      background-color: #2a2f3a;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 8px;
+      position: absolute;
+      z-index: 1;
+      bottom: 130%;
+      left: 50%;
+      margin-left: -110px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      box-shadow: 0 0 10px #58a6ff;
+    }
+
+    .tooltip:hover .tooltiptext {
+      visibility: visible;
+      opacity: 1;
     }
 
     @media (max-width: 768px) {
-      nav {
+      nav, .filters {
         flex-direction: column;
         align-items: center;
-      }
-      .filters {
-        flex-direction: column;
       }
     }
   </style>
@@ -130,8 +152,8 @@
   </nav>
 
   <div class="container">
-    <h1>🐋 Whale Wall Tracker by Coin</h1>
-    <p>Live tracking of large limit order walls on Binance and Bybit, grouped by coin.</p>
+    <h1>🐋 Whale Walls by Coin</h1>
+    <p>Clustered view of live buy/sell walls with insights, grouped per coin.</p>
 
     <div class="filters">
       <div class="filter-group">
@@ -179,7 +201,17 @@
 
   <script>
     let rawData = [];
+    let insights = {};
     let activeCoin = "";
+
+    async function fetchData() {
+      const wallRes = await fetch("https://api.cryptodensities.pro/api/walls");
+      const insightsRes = await fetch("/data/wall-insights.json");
+      rawData = await wallRes.json();
+      insights = await insightsRes.json();
+      renderTabs();
+      renderTables();
+    }
 
     function formatNumberShort(n) {
       if (!n || isNaN(n)) return "N/A";
@@ -187,17 +219,6 @@
       if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
       if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
       return n.toString();
-    }
-
-    async function fetchData() {
-      try {
-        const res = await fetch("https://api.cryptodensities.pro/api/walls");
-        rawData = await res.json();
-        renderTabs();
-        renderTables();
-      } catch (err) {
-        console.error("Failed to fetch data:", err);
-      }
     }
 
     function renderTabs() {
@@ -211,12 +232,20 @@
 
     function setActiveCoin(coin) {
       activeCoin = coin;
-      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-      document.querySelectorAll(`.tab-button`).forEach(btn => {
-        if (btn.innerText === coin) btn.classList.add('active');
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.toggle('active', btn.innerText === coin);
       });
       renderTables();
     }
+
+    function resetFilters() {
+      document.querySelectorAll(".filters select").forEach(select => select.value = "");
+      renderTables();
+    }
+
+    document.querySelectorAll(".filters select").forEach(select => {
+      select.addEventListener("change", renderTables);
+    });
 
     function renderTables() {
       const container = document.getElementById("coinTablesContainer");
@@ -246,10 +275,13 @@
         else if (w.value > 500000) icon = "🐋";
 
         const pulseClass = w.age_seconds <= 60 ? "pulse" : "";
+        const insight = insights?.[`${w.coin}_${w.price}`] || "No insights available";
 
         return `
           <tr class="${pulseClass}">
-            <td class="${w.type}">${icon} ${w.type.charAt(0).toUpperCase() + w.type.slice(1)}</td>
+            <td class="${w.type}">${icon} ${w.type.charAt(0).toUpperCase() + w.type.slice(1)}
+              <span class="tooltip">🧠<span class="tooltiptext">${insight}</span></span>
+            </td>
             <td>${w.exchange}</td>
             <td>${w.price.toLocaleString()}</td>
             <td>${w.quantity}</td>
@@ -263,7 +295,7 @@
       }).join("");
 
       container.innerHTML = `
-        <table class="coin-table active">
+        <table>
           <thead>
             <tr>
               <th>Type</th><th>Exchange</th><th>Price ($)</th><th>Quantity</th>
@@ -274,15 +306,6 @@
         </table>
       `;
     }
-
-    function resetFilters() {
-      document.querySelectorAll(".filters select").forEach(select => select.value = "");
-      renderTables();
-    }
-
-    document.querySelectorAll(".filters select").forEach(select => {
-      select.addEventListener("change", renderTables);
-    });
 
     fetchData();
   </script>
