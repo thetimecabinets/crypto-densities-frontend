@@ -12,8 +12,8 @@
 
     body {
       font-family: 'Arial', sans-serif;
-      background-color: #0d0d1a;
-      color: #f8f8ff;
+      background-color: #f3e5f5; /* Light Purple */
+      color: #111;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
@@ -29,7 +29,7 @@
     }
 
     nav {
-      background-color: #3c1361; /* Darker purple */
+      background-color: #3c1361;
       padding: 15px;
       color: white;
       display: flex;
@@ -61,11 +61,10 @@
 
     .sidebar {
       flex: 1;
-      background-color: #1e1e33;
-      color: #f8f8ff;
+      background-color: #fff;
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(170, 0, 255, 0.2);
+      box-shadow: 0 0 20px rgba(170, 0, 255, 0.15);
       height: fit-content;
     }
 
@@ -88,17 +87,16 @@
     }
 
     .tab-button {
-      background-color: #27263f;
+      background-color: #d1c4e9;
       border: none;
       padding: 8px 14px;
       cursor: pointer;
       font-weight: bold;
-      color: #f8f8ff;
       border-radius: 5px;
     }
 
     .tab-button.active {
-      background-color: #ff2dfd;
+      background-color: #6a1b9a;
       color: white;
     }
 
@@ -113,30 +111,59 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #1e1e33;
-      box-shadow: 0 0 5px rgba(255,255,255,0.05);
+      background-color: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.05);
       margin-bottom: 40px;
-      color: white;
+      color: black;
     }
 
     th, td {
       padding: 12px;
-      border-bottom: 1px solid #444;
+      border-bottom: 1px solid #ccc;
       text-align: left;
     }
 
-    .buy { color: #00ff99; font-weight: bold; }
-    .sell { color: #ff4444; font-weight: bold; }
+    .buy { color: green; font-weight: bold; }
+    .sell { color: red; font-weight: bold; }
 
     .pulse {
       animation: pulseGlow 1.5s ease-in-out infinite;
-      background-color: #331144 !important;
+      background-color: #fff8e1 !important;
     }
 
     @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0px rgba(255,20,147,0); }
-      50% { box-shadow: 0 0 10px rgba(255,20,147,0.8); }
-      100% { box-shadow: 0 0 0px rgba(255,20,147,0); }
+      0% { box-shadow: 0 0 0px rgba(255,165,0,0); }
+      50% { box-shadow: 0 0 10px rgba(255,165,0,0.8); }
+      100% { box-shadow: 0 0 0px rgba(255,165,0,0); }
+    }
+
+    #alerts {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 300px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 9999;
+      font-size: 14px;
+    }
+
+    .alert {
+      background-color: #6a1b9a;
+      color: white;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      opacity: 0;
+      animation: fadeInOut 6s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(10px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-10px); }
     }
 
     @media (max-width: 900px) {
@@ -221,12 +248,15 @@
       <h2>📌 Featured Content</h2>
       <p>🧠 Learn how to interpret whale walls and price reaction zones.</p>
       <p>💡 Tip: Combine order wall data with momentum shifts to detect fakeouts.</p>
-      <p>🔥 Popular tools: <a href="/position-calculator/" style="color:#00ffff;">Position Calculator</a></p>
-      <p>📘 Don’t miss: <a href="/how-to-use-whale-wall/" style="color:#aaff00;">How This Works</a></p>
+      <p>🔥 Popular tools: <a href="/position-calculator/" style="color:#6a1b9a;">Position Calculator</a></p>
+      <p>📘 Don’t miss: <a href="/how-to-use-whale-wall/" style="color:#004d40;">How This Works</a></p>
     </div>
   </div>
 
-  <!-- Neon Grid JS -->
+  <!-- Alerts container -->
+  <div id="alerts"></div>
+
+  <!-- Neon Grid Script -->
   <script>
     const canvas = document.getElementById('neonGrid');
     const ctx = canvas.getContext('2d');
@@ -265,10 +295,11 @@
     drawGrid();
   </script>
 
-  <!-- Whale Wall Table Script -->
+  <!-- Whale Walls + Alerts Logic -->
   <script>
     let rawData = [];
     let activeCoin = "";
+    let seenAlerts = new Set();
 
     function formatNumberShort(n) {
       if (!n || isNaN(n)) return "N/A";
@@ -284,6 +315,7 @@
         rawData = await res.json();
         renderTabs();
         renderTables();
+        checkAlerts();
       } catch (err) {
         console.error("Failed to fetch data:", err);
       }
@@ -292,7 +324,6 @@
     function renderTabs() {
       const tabs = document.getElementById("coinTabs");
       let coins = [...new Set(rawData.map(w => w.coin))];
-
       coins.sort((a, b) => {
         if (a === 'BTC') return -1;
         if (b === 'BTC') return 1;
@@ -373,6 +404,32 @@
       `;
     }
 
+    function showAlert(message) {
+      const alerts = document.getElementById("alerts");
+      const div = document.createElement("div");
+      div.className = "alert";
+      div.innerText = message;
+      alerts.appendChild(div);
+      setTimeout(() => {
+        alerts.removeChild(div);
+      }, 6000);
+    }
+
+    function checkAlerts() {
+      rawData.forEach(w => {
+        const id = `${w.coin}-${w.type}-${w.exchange}-${w.price}`;
+        if (!seenAlerts.has(id)) {
+          if (w.value > 1000000) {
+            showAlert(`🔥 Mega Wall: ${w.coin} at $${Math.round(w.price)} (${w.type})`);
+            seenAlerts.add(id);
+          } else if (Math.abs(w.distance) < 1.0) {
+            showAlert(`⚠️ Close Wall: ${w.coin} ${w.type} wall <1% away`);
+            seenAlerts.add(id);
+          }
+        }
+      });
+    }
+
     function resetFilters() {
       document.querySelectorAll(".filters select").forEach(select => select.value = "");
       renderTables();
@@ -383,6 +440,7 @@
     });
 
     fetchData();
+    setInterval(fetchData, 10000); // update every 10s
   </script>
 </body>
 </html>
