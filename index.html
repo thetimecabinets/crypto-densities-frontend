@@ -265,7 +265,7 @@
 
 <div id="alerts"></div>
 
-<!-- Neon Grid Script -->
+<!-- Neon Grid -->
 <script>
 const canvas = document.getElementById('neonGrid');
 const ctx = canvas.getContext('2d');
@@ -328,8 +328,14 @@ function renderTabs() {
   const tabs = document.getElementById("coinTabs");
   let coins = [...new Set(rawData.map(w => w.coin))];
   coins.sort((a, b) => (a === "BTC" ? -1 : b === "BTC" ? 1 : a === "ETH" ? -1 : b === "ETH" ? 1 : a.localeCompare(b)));
-  tabs.innerHTML = coins.map((coin, i) => `<button class="tab-button ${i === 0 ? 'active' : ''}" onclick="setActiveCoin('${coin}')">${coin}</button>`).join("");
-  activeCoin = coins[0];
+
+  if (!coins.includes(activeCoin)) {
+    activeCoin = coins[0];
+  }
+
+  tabs.innerHTML = coins.map(coin => `
+    <button class="tab-button ${coin === activeCoin ? 'active' : ''}" onclick="setActiveCoin('${coin}')">${coin}</button>
+  `).join("");
 }
 
 function setActiveCoin(coin) {
@@ -425,5 +431,6 @@ document.querySelectorAll(".filters select").forEach(select => {
 fetchData();
 setInterval(fetchData, 10000);
 </script>
+
 </body>
 </html>
