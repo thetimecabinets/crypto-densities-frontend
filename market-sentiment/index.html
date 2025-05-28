@@ -145,6 +145,7 @@
   <script>
     setInterval(() => location.reload(), 5 * 60 * 1000);
 
+    // Fear & Greed Score
     fetch("/data/fear-greed.json")
       .then(res => res.json())
       .then(data => {
@@ -159,6 +160,7 @@
         else box.className = "greed-box red";
       });
 
+    // Price Momentum Table
     fetch("/data/momentum.json")
       .then(res => res.json())
       .then(coins => {
@@ -172,16 +174,17 @@
         `).join("");
       });
 
+    // Historical Fear & Greed Chart with min/max points
     fetch("/data/fear-greed-history.json")
       .then(res => res.json())
       .then(history => {
         const labels = history.map(h => h.date);
         const values = history.map(h => h.value);
 
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        const minIndex = values.indexOf(min);
-        const maxIndex = values.indexOf(max);
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+        const minIndex = values.indexOf(minValue);
+        const maxIndex = values.indexOf(maxValue);
 
         const ctx = document.getElementById("sentimentChart").getContext("2d");
 
@@ -189,21 +192,38 @@
           type: 'line',
           data: {
             labels,
-            datasets: [{
-              label: 'Fear & Greed Index',
-              data: values,
-              fill: true,
-              backgroundColor: 'rgba(106, 27, 154, 0.1)',
-              borderColor: '#6a1b9a',
-              borderWidth: 2,
-              tension: 0.3,
-              pointRadius: values.map((_, i) => (i === minIndex || i === maxIndex) ? 6 : 3),
-              pointBackgroundColor: values.map((_, i) => {
-                if (i === minIndex) return '#2ecc71';
-                if (i === maxIndex) return '#e74c3c';
-                return '#6a1b9a';
-              })
-            }]
+            datasets: [
+              {
+                label: 'Fear & Greed Index',
+                data: values,
+                fill: true,
+                backgroundColor: 'rgba(106, 27, 154, 0.1)',
+                borderColor: '#6a1b9a',
+                borderWidth: 2,
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#6a1b9a'
+              },
+              {
+                label: 'Min',
+                data: labels.map((_, i) => i === minIndex ? minValue : null),
+                pointRadius: 7,
+                pointBackgroundColor: '#2ecc71',
+                borderColor: 'transparent',
+                showLine: false,
+                type: 'line'
+              },
+              {
+                label: 'Max',
+                data: labels.map((_, i) => i === maxIndex ? maxValue : null),
+                pointRadius: 7,
+                pointBackgroundColor: '#e74c3c',
+                borderColor: 'transparent',
+                showLine: false,
+                type: 'line'
+              }
+            ]
           },
           options: {
             responsive: true,
@@ -228,7 +248,7 @@
                   text: 'Date'
                 },
                 grid: {
-                  color: 'rgba(0,0,0,0.05)'
+                  color: 'rgba(0, 0, 0, 0.05)'
                 }
               },
               y: {
@@ -239,7 +259,7 @@
                   text: 'Index Value'
                 },
                 grid: {
-                  color: 'rgba(0,0,0,0.1)'
+                  color: 'rgba(0, 0, 0, 0.1)'
                 }
               }
             }
