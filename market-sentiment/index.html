@@ -9,9 +9,13 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f3e5f5;
       margin: 0;
       padding: 0;
+      background-color: #f3e5f5;
+      background-image:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      background-size: 24px 24px;
     }
 
     nav {
@@ -85,11 +89,19 @@
     .orange { background-color: #e67e22; }
     .red { background-color: #e74c3c; }
 
+    .chart-title {
+      text-align: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-top: 10px;
+      color: #6a1b9a;
+      text-shadow:
+        0 0 5px #c084fc,
+        0 0 10px #b472f2;
+    }
+
     canvas {
       max-width: 100%;
-      background-image: linear-gradient(90deg, rgba(0,0,0,0.02) 1px, transparent 1px),
-                        linear-gradient(rgba(0,0,0,0.02) 1px, transparent 1px);
-      background-size: 20px 20px;
       background-color: white;
       margin-top: 20px;
       padding: 20px;
@@ -108,6 +120,29 @@
         0 0 10px #a64ac9,
         0 0 20px #a64ac9,
         0 0 40px #8e44ad;
+    }
+
+    #rangeToggle {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #rangeToggle button {
+      padding: 8px 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      background-color: #6a1b9a;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #rangeToggle button.active,
+    #rangeToggle button:hover {
+      background-color: #8e44ad;
     }
 
     @media (max-width: 768px) {
@@ -136,6 +171,12 @@
       <h1 class="neon-title">📊 Market Sentiment Overview</h1>
 
       <div id="greedBox" class="greed-box green">Loading Fear & Greed Index...</div>
+
+      <h2 class="chart-title">📈 Historical Fear & Greed Index</h2>
+      <div id="rangeToggle">
+        <button id="btn7" class="active">7 Days</button>
+        <button id="btn30">30 Days</button>
+      </div>
       <canvas id="sentimentChart" height="120"></canvas>
 
       <h2>🔥 Price Momentum (Top 10 Coins)</h2>
@@ -159,9 +200,119 @@
   </div>
 
   <script>
-    setInterval(() => location.reload(), 5 * 60 * 1000);
+    let allData = [];
 
-    fetch("/data/fear-greed.json")
+    fetch("./data/fear-greed-history.json")
+      .then(res => res.json())
+      .then(json => {
+        allData = json;
+        renderChart(7);
+      });
+
+    function renderChart(days) {
+      const sliced = allData.slice(-days);
+      const labels = sliced.map(d => d.date);
+      const values = sliced.map(d => d.value);
+
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const minIndex = values.indexOf(min);
+      const maxIndex = values.indexOf(max);
+
+      const ctx = document.getElementById("sentimentChart").getContext("2d");
+      if (window.sentimentChart) {
+        window.sentimentChart.destroy();
+      }
+
+      window.sentimentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Fear & Greed Index',
+              data: values,
+              borderColor: '#a64ac9',
+              backgroundColor: 'rgba(166, 74, 201, 0.25)',
+              borderWidth: 3,
+              tension: 0.4,
+              pointRadius: 4,
+              pointHoverRadius: 7,
+              pointBackgroundColor: '#a64ac9',
+              fill: true
+            },
+            {
+              label: 'Min',
+              data: labels.map((_, i) => i === minIndex ? min : null),
+              pointRadius: 7,
+              pointBackgroundColor: '#2ecc71',
+              showLine: false,
+              borderColor: 'transparent',
+              type: 'line'
+            },
+            {
+              label: 'Max',
+              data: labels.map((_, i) => i === maxIndex ? max : null),
+              pointRadius: 7,
+              pointBackgroundColor: '#e74c3c',
+              showLine: false,
+              borderColor: 'transparent',
+              type: 'line'
+            }
+          ]
+        },
+        options: {
+          animation: {
+            duration: 1500,
+            easing: 'easeOutQuart'
+          },
+          responsive: true,
+          plugins: {
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                label: function(ctx) {
+                  return `Value: ${ctx.parsed.y}`;
+                }
+              }
+            },
+            legend: { display: false }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          scales: {
+            x: {
+              title: { display: true, text: 'Date' },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            y: {
+              beginAtZero: true,
+              suggestedMax: 100,
+              title: { display: true, text: 'Index Value' },
+              grid: { color: 'rgba(0,0,0,0.1)' }
+            }
+          }
+        }
+      });
+    }
+
+    document.getElementById("btn7").addEventListener("click", () => {
+      renderChart(7);
+      document.getElementById("btn7").classList.add("active");
+      document.getElementById("btn30").classList.remove("active");
+    });
+
+    document.getElementById("btn30").addEventListener("click", () => {
+      renderChart(30);
+      document.getElementById("btn30").classList.add("active");
+      document.getElementById("btn7").classList.remove("active");
+    });
+
+    fetch("./data/fear-greed.json")
       .then(res => res.json())
       .then(data => {
         const box = document.getElementById("greedBox");
@@ -175,7 +326,7 @@
         else box.className = "greed-box red";
       });
 
-    fetch("/data/momentum.json")
+    fetch("./data/momentum.json")
       .then(res => res.json())
       .then(coins => {
         const tbody = document.querySelector("#momentumTable tbody");
@@ -186,93 +337,6 @@
             <td style="color: ${c.change >= 0 ? 'green' : 'red'};">${c.change.toFixed(2)}%</td>
           </tr>
         `).join("");
-      });
-
-    fetch("/data/fear-greed-history.json")
-      .then(res => res.json())
-      .then(history => {
-        const labels = history.map(h => h.date);
-        const values = history.map(h => h.value);
-        const min = Math.min(...values);
-        const max = Math.max(...values);
-        const minIndex = values.indexOf(min);
-        const maxIndex = values.indexOf(max);
-
-        const ctx = document.getElementById("sentimentChart").getContext("2d");
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'Fear & Greed Index',
-                data: values,
-                borderColor: '#6a1b9a',
-                backgroundColor: 'rgba(106, 27, 154, 0.1)',
-                borderWidth: 2,
-                tension: 0.3,
-                pointRadius: 3,
-                pointBackgroundColor: '#6a1b9a',
-                fill: true
-              },
-              {
-                label: 'Min',
-                data: labels.map((_, i) => i === minIndex ? min : null),
-                pointRadius: 6,
-                pointBackgroundColor: '#2ecc71',
-                showLine: false,
-                borderColor: 'transparent',
-                type: 'line'
-              },
-              {
-                label: 'Max',
-                data: labels.map((_, i) => i === maxIndex ? max : null),
-                pointRadius: 6,
-                pointBackgroundColor: '#e74c3c',
-                showLine: false,
-                borderColor: 'transparent',
-                type: 'line'
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              tooltip: {
-                mode: 'index',
-                intersect: false
-              },
-              legend: { display: false }
-            },
-            interaction: {
-              mode: 'nearest',
-              axis: 'x',
-              intersect: false
-            },
-            scales: {
-              x: {
-                title: {
-                  display: true,
-                  text: 'Date'
-                },
-                grid: {
-                  color: 'rgba(0,0,0,0.05)'
-                }
-              },
-              y: {
-                beginAtZero: true,
-                suggestedMax: 100,
-                title: {
-                  display: true,
-                  text: 'Index Value'
-                },
-                grid: {
-                  color: 'rgba(0,0,0,0.1)'
-                }
-              }
-            }
-          }
-        });
       });
   </script>
 </body>
