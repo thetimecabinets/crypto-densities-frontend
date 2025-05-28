@@ -1,8 +1,6 @@
 <script>
-  // Reload every 5 minutes
   setInterval(() => location.reload(), 5 * 60 * 1000);
 
-  // Fear & Greed Box
   fetch("/data/fear-greed.json")
     .then(res => res.json())
     .then(data => {
@@ -17,7 +15,6 @@
       else box.className = "greed-box red";
     });
 
-  // Momentum Table
   fetch("/data/momentum.json")
     .then(res => res.json())
     .then(coins => {
@@ -31,49 +28,43 @@
       `).join("");
     });
 
-  // Historical Sentiment Chart with Min/Max
   fetch("/data/fear-greed-history.json")
     .then(res => res.json())
     .then(history => {
       const labels = history.map(h => h.date);
       const values = history.map(h => h.value);
 
-      // Find min/max values and indexes
       const minValue = Math.min(...values);
       const maxValue = Math.max(...values);
       const minIndex = values.indexOf(minValue);
       const maxIndex = values.indexOf(maxValue);
 
-      // Create dataset with custom point styles
-      const dataset = {
-        label: 'Fear & Greed Index',
-        data: values,
-        fill: true,
-        backgroundColor: 'rgba(106, 27, 154, 0.1)',
-        borderColor: '#6a1b9a',
-        borderWidth: 2,
-        tension: 0.4,
-        pointRadius: values.map((_, i) => i === minIndex || i === maxIndex ? 6 : 3),
-        pointHoverRadius: values.map((_, i) => i === minIndex || i === maxIndex ? 8 : 5),
-        pointBackgroundColor: values.map((_, i) => {
-          if (i === minIndex) return '#2ecc71'; // green
-          if (i === maxIndex) return '#e74c3c'; // red
-          return '#6a1b9a';
-        }),
-        pointStyle: values.map((_, i) => {
-          if (i === minIndex) return 'triangle';
-          if (i === maxIndex) return 'rectRot';
-          return 'circle';
-        })
-      };
+      const pointColors = values.map((_, i) => {
+        if (i === minIndex) return '#2ecc71'; // Green for min
+        if (i === maxIndex) return '#e74c3c'; // Red for max
+        return '#6a1b9a'; // Default purple
+      });
 
-      // Draw chart
+      const pointRadius = values.map((_, i) => (i === minIndex || i === maxIndex ? 6 : 3));
+      const pointHoverRadius = values.map((_, i) => (i === minIndex || i === maxIndex ? 8 : 5));
+
       const ctx = document.getElementById("sentimentChart").getContext("2d");
       new Chart(ctx, {
         type: 'line',
         data: {
           labels,
-          datasets: [dataset]
+          datasets: [{
+            label: 'Fear & Greed Index',
+            data: values,
+            fill: true,
+            backgroundColor: 'rgba(106, 27, 154, 0.1)',
+            borderColor: '#6a1b9a',
+            borderWidth: 2,
+            tension: 0.4,
+            pointBackgroundColor: pointColors,
+            pointRadius,
+            pointHoverRadius
+          }]
         },
         options: {
           responsive: true,
@@ -93,24 +84,14 @@
           },
           scales: {
             x: {
-              title: {
-                display: true,
-                text: 'Date'
-              },
-              grid: {
-                color: 'rgba(0,0,0,0.05)'
-              }
+              title: { display: true, text: 'Date' },
+              grid: { color: 'rgba(0,0,0,0.05)' }
             },
             y: {
               beginAtZero: true,
               suggestedMax: 100,
-              title: {
-                display: true,
-                text: 'Index Value'
-              },
-              grid: {
-                color: 'rgba(0,0,0,0.1)'
-              }
+              title: { display: true, text: 'Index Value' },
+              grid: { color: 'rgba(0,0,0,0.1)' }
             }
           }
         }
