@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>📊 Market Sentiment – CryptoDensities.pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Live crypto market sentiment index and price momentum for top coins. Updated automatically with clear visuals.">
+  <meta name="description" content="Live crypto market sentiment index and price momentum for top coins.">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -95,13 +95,13 @@
       font-weight: bold;
       margin-top: 10px;
       color: #6a1b9a;
-      text-shadow:
-        0 0 5px #c084fc,
-        0 0 10px #b472f2;
+      text-shadow: 0 0 5px #c084fc, 0 0 10px #b472f2;
     }
 
     canvas {
       max-width: 100%;
+      width: 100%;
+      height: 320px;
       background-color: white;
       margin-top: 20px;
       padding: 20px;
@@ -177,7 +177,7 @@
         <button id="btn7" class="active">7 Days</button>
         <button id="btn30">30 Days</button>
       </div>
-      <canvas id="sentimentChart" height="120"></canvas>
+      <canvas id="sentimentChart"></canvas>
 
       <h2>🔥 Price Momentum (Top 10 Coins)</h2>
       <table class="momentum-table" id="momentumTable">
@@ -202,11 +202,15 @@
   <script>
     let allData = [];
 
-    fetch("./data/fear-greed-history.json")
+    fetch("/market-sentiment/data/fear-greed-history.json")
       .then(res => res.json())
       .then(json => {
         allData = json;
         renderChart(7);
+      })
+      .catch(err => {
+        console.error(err);
+        alert("⚠️ Could not load historical chart data.");
       });
 
     function renderChart(days) {
@@ -220,9 +224,7 @@
       const maxIndex = values.indexOf(max);
 
       const ctx = document.getElementById("sentimentChart").getContext("2d");
-      if (window.sentimentChart) {
-        window.sentimentChart.destroy();
-      }
+      if (window.sentimentChart) window.sentimentChart.destroy();
 
       window.sentimentChart = new Chart(ctx, {
         type: 'line',
@@ -262,11 +264,11 @@
           ]
         },
         options: {
+          responsive: true,
           animation: {
-            duration: 1500,
+            duration: 1200,
             easing: 'easeOutQuart'
           },
-          responsive: true,
           plugins: {
             tooltip: {
               mode: 'index',
@@ -312,7 +314,7 @@
       document.getElementById("btn7").classList.remove("active");
     });
 
-    fetch("./data/fear-greed.json")
+    fetch("/market-sentiment/data/fear-greed.json")
       .then(res => res.json())
       .then(data => {
         const box = document.getElementById("greedBox");
@@ -324,9 +326,13 @@
         else if (n >= 50) box.className = "greed-box yellow";
         else if (n >= 25) box.className = "greed-box orange";
         else box.className = "greed-box red";
+      })
+      .catch(err => {
+        console.error(err);
+        alert("⚠️ Could not load current index.");
       });
 
-    fetch("./data/momentum.json")
+    fetch("/market-sentiment/data/momentum.json")
       .then(res => res.json())
       .then(coins => {
         const tbody = document.querySelector("#momentumTable tbody");
@@ -337,6 +343,10 @@
             <td style="color: ${c.change >= 0 ? 'green' : 'red'};">${c.change.toFixed(2)}%</td>
           </tr>
         `).join("");
+      })
+      .catch(err => {
+        console.error(err);
+        alert("⚠️ Could not load momentum data.");
       });
   </script>
 </body>
