@@ -1,52 +1,52 @@
 [
   {
     "name": "BTC",
-    "price": 104397,
-    "change": -0.03909
+    "price": 104334,
+    "change": 0.3941
   },
   {
     "name": "ETH",
-    "price": 2505.12,
-    "change": 0.2122
+    "price": 2502.06,
+    "change": 0.93014
   },
   {
     "name": "USDT",
     "price": 1.0,
-    "change": -0.00524
+    "change": -0.0042
   },
   {
     "name": "XRP",
     "price": 2.17,
-    "change": 0.88148
+    "change": 1.40886
   },
   {
     "name": "BNB",
-    "price": 642.12,
-    "change": -0.01917
+    "price": 641.62,
+    "change": 0.15336
   },
   {
     "name": "SOL",
-    "price": 145.17,
-    "change": -0.34489
+    "price": 145.02,
+    "change": 0.25053
   },
   {
     "name": "USDC",
-    "price": 0.999801,
-    "change": -0.0004
+    "price": 0.999799,
+    "change": 0.00199
   },
   {
     "name": "TRX",
-    "price": 0.274197,
-    "change": 0.97895
+    "price": 0.274243,
+    "change": 1.08127
   },
   {
     "name": "DOGE",
-    "price": 0.169812,
-    "change": 0.86177
+    "price": 0.16972,
+    "change": 1.6884
   },
   {
     "name": "STETH",
-    "price": 2503.53,
-    "change": 0.1675
+    "price": 2499.87,
+    "change": 0.83479
   }
 ]
